@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Производственный планировщик</title>
+  <style>
+    :root {
+      --primary-color: #4285f4;
+      --secondary-color: #34a853;
+      --error-color: #ea4335;
+      --text-color: #333;
+      --light-gray: #f5f5f5;
+      --border-color: #ddd;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      color: var(--text-color);
+      background-color: #f9f9f9;
+      line-height: 1.6;
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      height: 100vh;
+    }
+
+    /* Календарь */
+    .calendar-panel {
+      background: white;
+      border-right: 1px solid var(--border-color);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .calendar-title {
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+
+    .calendar-nav button {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+
+    .calendar-nav button:hover {
+      background: var(--light-gray);
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 5px;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .calendar-day:hover {
+      background: var(--light-gray);
+    }
+
+    .calendar-day.current {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .calendar-day.other-month {
+      color: #aaa;
+    }
+
+    /* Основная панель */
+    .main-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .timeline-header {
+      padding: 15px 20px;
+      background: white;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .current-date {
+      font-size: 1.3rem;
+      font-weight: 500;
+    }
+
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .zoom-slider {
+      width: 200px;
+    }
+
+    .timeline-container {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+      background: white;
+    }
+
+    .timeline {
+      min-width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .time-ruler {
+      position: sticky;
+      top: 0;
+      height: 50px;
+      background: white;
+      border-bottom: 1px solid var(--border-color);
+      z-index: 10;
+      display: flex;
+    }
+
+    .time-ruler-hour {
+      position: relative;
+      border-right: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+
+    .time-ruler-hour-label {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+    }
+
+    .time-slots {
+      position: relative;
+      height: calc(100% - 50px);
+    }
+
+    .time-slot {
+      position: absolute;
+      border-right: 1px solid #f0f0f0;
+      height: 100%;
+    }
+
+    .operation {
+      position: absolute;
+      background: var(--secondary-color);
+      color: white;
+      border-radius: 4px;
+      padding: 8px;
+      overflow: hidden;
+      cursor: move;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-size: 0.9rem;
+      z-index: 5;
+      border-left: 3px solid rgba(0,0,0,0.2);
+    }
+
+    .operation:hover {
+      opacity: 0.9;
+    }
+
+    .operation .drag-handle {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: rgba(0,0,0,0.1);
+      cursor: ns-resize;
+    }
+
+    /* Форма добавления операции */
+    .operation-form {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .btn:hover {
+      background: #3367d6;
+    }
+
+    .btn-block {
+      display: block;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- Панель календаря -->
+  <div class="calendar-panel">
+    <div class="calendar-header">
+      <div class="calendar-title" id="calendar-month-year">Июнь 2023</div>
+      <div class="calendar-nav">
+        <button id="prev-month">&lt;</button>
+        <button id="next-month">&gt;</button>
+      </div>
+    </div>
+
+    <div class="calendar-grid">
+      <div class="calendar-weekday">Пн</div>
+      <div class="calendar-weekday">Вт</div>
+      <div class="calendar-weekday">Ср</div>
+      <div class="calendar-weekday">Чт</div>
+      <div class="calendar-weekday">Пт</div>
+      <div class="calendar-weekday">Сб</div>
+      <div class="calendar-weekday">Вс</div>
+    </div>
+
+    <div class="calendar-days" id="calendar-days"></div>
+  </div>
+
+  <!-- Основная панель -->
+  <div class="main-panel">
+    <div class="timeline-header">
+      <div class="current-date" id="current-date">Понедельник, 1 июня 2023</div>
+      <div class="zoom-controls">
+        <span>Масштаб:</span>
+        <input type="range" min="5" max="60" step="5" value="30" class="zoom-slider" id="zoom-slider">
+        <span id="zoom-value">30 мин</span>
+      </div>
+    </div>
+
+    <div class="timeline-container">
+      <div class="timeline">
+        <div class="time-ruler" id="time-ruler"></div>
+        <div class="time-slots" id="time-slots"></div>
+      </div>
+    </div>
+
+    <div class="operation-form">
+      <h2>Добавить операцию</h2>
+      <div class="form-group">
+        <label for="operation-name">Название операции</label>
+        <input type="text" id="operation-name" class="form-control" placeholder="Лазерная резка металла">
+      </div>
+      <div class="form-group">
+        <label for="operation-start">Время начала</label>
+        <input type="time" id="operation-start" class="form-control" step="300">
+      </div>
+      <div class="form-group">
+        <label for="operation-duration">Длительность (минуты)</label>
+        <input type="number" id="operation-duration" class="form-control" min="5" step="5" value="30">
+      </div>
+      <button id="add-operation" class="btn btn-block">Добавить операцию</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Текущая дата и настройки
+  let currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+
+  let zoomLevel = 30; // минут на ячейку
+  let operations = [];
+
+  // Инициализация приложения
+  function initApp() {
+    renderCalendar();
+    updateDateDisplay();
+    renderTimeline();
+
+    // Загрузка тестовых данных
+    loadSampleData();
+  }
+
+  // Загрузка тестовых данных
+  function loadSampleData() {
+    const now = new Date();
+    const sampleOperations = [
+      {
+        name: "Лазерная резка металла",
+        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0).toISOString(),
+        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30).toISOString()
+      },
+      {
+        name: "Фрезеровка детали",
+        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 0).toISOString(),
+        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 15).toISOString()
+      },
+      {
+        name: "Покраска изделия",
+        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0).toISOString(),
+        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 45).toISOString()
+      }
+    ];
+
+    operations = sampleOperations;
+    renderOperations();
+  }
+
+  // Отрисовка календаря
+  function renderCalendar() {
+    const calendarDays = document.getElementById('calendar-days');
+    calendarDays.innerHTML = '';
+
+    // Обновление заголовка календаря
+    const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+    document.getElementById('calendar-month-year').textContent =
+            `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+
+    // Получаем первый день месяца и количество дней
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const daysInMonth = lastDay.getDate();
+
+    // Определяем день недели первого дня месяца (0 - воскресенье, 1 - понедельник и т.д.)
+    let firstDayOfWeek = firstDay.getDay();
+    if (firstDayOfWeek === 0) firstDayOfWeek = 7; // Делаем воскресенье 7-м днем
+
+    // Добавляем пустые ячейки для дней предыдущего месяца
+    for (let i = 1; i < firstDayOfWeek; i++) {
+      const prevMonthDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+      prevMonthDay.setDate(prevMonthDay.getDate() - (firstDayOfWeek - i - 1));
+
+      const dayElement = document.createElement('div');
+      dayElement.className = 'calendar-day other-month';
+      dayElement.textContent = prevMonthDay.getDate();
+      calendarDays.appendChild(dayElement);
+    }
+
+    // Добавляем дни текущего месяца
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayElement = document.createElement('div');
+      dayElement.className = 'calendar-day';
+      dayElement.textContent = i;
+
+      // Проверяем, является ли день текущим
+      if (i === currentDate.getDate() &&
+              currentDate.getMonth() === firstDay.getMonth() &&
+              currentDate.getFullYear() === firstDay.getFullYear()) {
+        dayElement.classList.add('current');
+      }
+
+      // Добавляем обработчик клика
+      dayElement.addEventListener('click', () => {
+        selectDate(i);
+      });
+
+      calendarDays.appendChild(dayElement);
+    }
+
+    // Добавляем пустые ячейки для дней следующего месяца
+    const totalCells = Math.ceil((firstDayOfWeek - 1 + daysInMonth) / 7) * 7;
+    const remainingCells = totalCells - (firstDayOfWeek - 1 + daysInMonth);
+
+    for (let i = 1; i <= remainingCells; i++) {
+      const dayElement = document.createElement('div');
+      dayElement.className = 'calendar-day other-month';
+      dayElement.textContent = i;
+      calendarDays.appendChild(dayElement);
+    }
+  }
+
+  // Выбор даты в календаре
+  function selectDate(day) {
+    currentDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            day
+    );
+    updateDateDisplay();
+    renderTimeline();
+  }
+
+  // Переключение месяцев
+  function changeMonth(offset) {
+    currentDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() + offset,
+            1
+    );
+    renderCalendar();
+  }
+
+  // Обновление отображения текущей даты
+  function updateDateDisplay() {
+    const daysOfWeek = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+    const monthNames = ["января", "февраля", "марта", "апреля", "мая", "июня",
+      "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+
+    document.getElementById('current-date').textContent =
+            `${daysOfWeek[currentDate.getDay()]}, ${currentDate.getDate()} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+  }
+
+  // Отрисовка временной шкалы
+  function renderTimeline() {
+    renderTimeRuler();
+    renderTimeSlots();
+    renderOperations();
+  }
+
+  // Отрисовка линейки времени
+  function renderTimeRuler() {
+    const timeRuler = document.getElementById('time-ruler');
+    timeRuler.innerHTML = '';
+
+    // Рассчитываем ширину одной минуты
+    const minutesInDay = 24 * 60;
+    const minuteWidth = 100 / (minutesInDay / zoomLevel);
+
+    // Добавляем часы
+    for (let hour = 0; hour < 24; hour++) {
+      const hourElement = document.createElement('div');
+      hourElement.className = 'time-ruler-hour';
+      hourElement.style.width = `${60 * minuteWidth}px`;
+
+      const hourLabel = document.createElement('div');
+      hourLabel.className = 'time-ruler-hour-label';
+      hourLabel.textContent = `${hour}:00`;
+
+      hourElement.appendChild(hourLabel);
+      timeRuler.appendChild(hourElement);
+    }
+  }
+
+  // Отрисовка временных слотов
+  function renderTimeSlots() {
+    const timeSlots = document.getElementById('time-slots');
+    timeSlots.innerHTML = '';
+
+    // Рассчитываем ширину одной минуты
+    const minutesInDay = 24 * 60;
+    const minuteWidth = 100 / (minutesInDay / zoomLevel);
+
+    // Добавляем слоты по zoomLevel минут
+    for (let i = 0; i < minutesInDay; i += zoomLevel) {
+      const slot = document.createElement('div');
+      slot.className = 'time-slot';
+      slot.style.left = `${(i / zoomLevel) * minuteWidth}%`;
+      slot.style.width = `${minuteWidth}%`;
+      timeSlots.appendChild(slot);
+    }
+  }
+
+  // Отрисовка операций
+  function renderOperations() {
+    const timeSlots = document.getElementById('time-slots');
+
+    // Удаляем старые операции
+    document.querySelectorAll('.operation').forEach(op => op.remove());
+
+    // Рассчитываем ширину одной минуты
+    const minuteWidth = 100 / (24 * 60 / zoomLevel);
+
+    operations.forEach((op, index) => {
+      const opStart = new Date(op.start);
+      const opEnd = new Date(op.end);
+
+      // Проверяем, относится ли операция к текущему дню
+      if (opStart.toDateString() === currentDate.toDateString()) {
+        // Вычисляем позицию и размеры
+        const startMinutes = opStart.getHours() * 60 + opStart.getMinutes();
+        const endMinutes = opEnd.getHours() * 60 + opEnd.getMinutes();
+        const durationMinutes = endMinutes - startMinutes;
+
+        const left = (startMinutes / zoomLevel) * minuteWidth;
+        const width = (durationMinutes / zoomLevel) * minuteWidth;
+
+        // Создаем элемент операции
+        const operationEl = document.createElement('div');
+        operationEl.className = 'operation';
+        operationEl.textContent = op.name;
+        operationEl.dataset.index = index;
+
+        operationEl.style.left = `${left}%`;
+        operationEl.style.width = `${width}%`;
+        operationEl.style.top = '10px';
+        operationEl.style.height = '40px';
+
+        // Добавляем элемент для изменения длительности
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'drag-handle';
+        operationEl.appendChild(dragHandle);
+
+        // Добавляем возможность перетаскивания
+        makeDraggable(operationEl, dragHandle);
+
+        timeSlots.appendChild(operationEl);
+      }
+    });
+  }
+
+  // Делаем операцию перетаскиваемой
+  function makeDraggable(element, resizeHandle) {
+    let isDragging = false;
+    let isResizing = false;
+    let startX, startY, startLeft, startTop, startWidth, startHeight;
+
+    element.addEventListener('mousedown', (e) => {
+      if (e.target === resizeHandle) {
+        // Начало изменения размера
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseFloat(element.style.width);
+        startHeight = parseFloat(element.style.height);
+      } else {
+        // Начало перемещения
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseFloat(element.style.left);
+        startTop = parseFloat(element.style.top);
+      }
+
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging && !isResizing) return;
+
+      e.preventDefault();
+
+      if (isDragging) {
+        // Перемещение операции
+        const dx = (e.clientX - startX) / window.innerWidth * 100;
+        const dy = e.clientY - startY;
+
+        element.style.left = `${startLeft + dx}%`;
+        element.style.top = `${startTop + dy}px`;
+      } else if (isResizing) {
+        // Изменение размера операции
+        const dy = e.clientY - startY;
+        const newHeight = startHeight + dy;
+
+        if (newHeight > 20) { // Минимальная высота
+          element.style.height = `${newHeight}px`;
+        }
+      }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (isDragging || isResizing) {
+        e.preventDefault();
+
+        // Обновляем данные операции
+        const index = element.dataset.index;
+        const operation = operations[index];
+        const opStart = new Date(operation.start);
+        const opEnd = new Date(operation.end);
+
+        // Рассчитываем новые временные параметры
+        const minuteWidth = 100 / (24 * 60 / zoomLevel);
+        const newLeft = parseFloat(element.style.left);
+        const newStartMinutes = (newLeft / minuteWidth) * zoomLevel;
+
+        if (isDragging) {
+          // Обновляем время начала
+          const newStartDate = new Date(
+                  currentDate.getFullYear(),
+                  currentDate.getMonth(),
+                  currentDate.getDate(),
+                  Math.floor(newStartMinutes / 60),
+                  newStartMinutes % 60
+          );
+
+          // Сохраняем длительность
+          const duration = (opEnd - opStart) / (1000 * 60);
+          const newEndDate = new Date(
+                  newStartDate.getTime() + duration * 60 * 1000
+          );
+
+          operations[index].start = newStartDate.toISOString();
+          operations[index].end = newEndDate.toISOString();
+        } else if (isResizing) {
+          // Обновляем время окончания
+          const newHeight = parseFloat(element.style.height);
+          const durationMinutes = newHeight / 40 * (opEnd - opStart) / (1000 * 60);
+          const newEndDate = new Date(
+                  opStart.getTime() + durationMinutes * 60 * 1000
+          );
+
+          operations[index].end = newEndDate.toISOString();
+        }
+
+        // Перерисовываем операции для точного позиционирования
+        renderOperations();
+      }
+
+      isDragging = false;
+      isResizing = false;
+    });
+  }
+
+  // Добавление новой операции
+  document.getElementById('add-operation').addEventListener('click', function() {
+    const name = document.getElementById('operation-name').value;
+    const startTime = document.getElementById('operation-start').value;
+    const duration = parseInt(document.getElementById('operation-duration').value);
+
+    if (name && startTime && duration) {
+      const [hours, minutes] = startTime.split(':').map(Number);
+
+      const startDate = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              currentDate.getDate(),
+              hours,
+              minutes
+      );
+
+      const endDate = new Date(
+              startDate.getTime() + duration * 60 * 1000
+      );
+
+      operations.push({
+        name: name,
+        start: startDate.toISOString(),
+        end: endDate.toISOString()
+      });
+
+      renderOperations();
+
+      // Очищаем форму
+      document.getElementById('operation-name').value = '';
+      document.getElementById('operation-start').value = '';
+      document.getElementById('operation-duration').value = '30';
+    } else {
+      alert('Заполните все поля!');
+    }
+  });
+
+  // Изменение масштаба
+  document.getElementById('zoom-slider').addEventListener('input', function(e) {
+    zoomLevel = parseInt(e.target.value);
+    document.getElementById('zoom-value').textContent = `${zoomLevel} мин`;
+    renderTimeline();
+  });
+
+  // Навигация по месяцам
+  document.getElementById('prev-month').addEventListener('click', function() {
+    changeMonth(-1);
+  });
+
+  document.getElementById('next-month').addEventListener('click', function() {
+    changeMonth(1);
+  });
+
+  // Инициализация при загрузке
+  window.onload = function() {
+    // Устанавливаем текущее время в поле начала операции
+    const now = new Date();
+    document.getElementById('operation-start').value =
+            `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+    initApp();
+  };
+</script>
+</body>
+</html>
