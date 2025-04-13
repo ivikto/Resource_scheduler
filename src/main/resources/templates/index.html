@@ -1,266 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
+<link rel="stylesheet" href="/styles/TimeLineStyle.css"/>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Производственный планировщик</title>
-  <style>
-    :root {
-      --primary-color: #4285f4;
-      --secondary-color: #34a853;
-      --error-color: #ea4335;
-      --text-color: #333;
-      --light-gray: #f5f5f5;
-      --border-color: #ddd;
-    }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Roboto', Arial, sans-serif;
-      color: var(--text-color);
-      background-color: #f9f9f9;
-      line-height: 1.6;
-    }
-
-    .app-container {
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      height: 100vh;
-    }
-
-    /* Календарь */
-    .calendar-panel {
-      background: white;
-      border-right: 1px solid var(--border-color);
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .calendar-title {
-      font-size: 1.2rem;
-      font-weight: 500;
-    }
-
-    .calendar-nav button {
-      background: none;
-      border: none;
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
-
-    .calendar-nav button:hover {
-      background: var(--light-gray);
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      margin-bottom: 10px;
-    }
-
-    .calendar-weekday {
-      text-align: center;
-      font-weight: 500;
-      font-size: 0.9rem;
-      padding: 5px;
-    }
-
-    .calendar-days {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-    }
-
-    .calendar-day {
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .calendar-day:hover {
-      background: var(--light-gray);
-    }
-
-    .calendar-day.current {
-      background: var(--primary-color);
-      color: white;
-    }
-
-    .calendar-day.other-month {
-      color: #aaa;
-    }
-
-    /* Основная панель */
-    .main-panel {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .timeline-header {
-      padding: 15px 20px;
-      background: white;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .current-date {
-      font-size: 1.3rem;
-      font-weight: 500;
-    }
-
-    .zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .zoom-slider {
-      width: 200px;
-    }
-
-    .timeline-container {
-      flex: 1;
-      overflow: auto;
-      position: relative;
-      background: white;
-    }
-
-    .timeline {
-      min-width: 100%;
-      height: 100%;
-      position: relative;
-    }
-
-    .time-ruler {
-      position: sticky;
-      top: 0;
-      height: 50px;
-      background: white;
-      border-bottom: 1px solid var(--border-color);
-      z-index: 10;
-      display: flex;
-    }
-
-    .time-ruler-hour {
-      position: relative;
-      border-right: 1px solid var(--border-color);
-      flex-shrink: 0;
-    }
-
-    .time-ruler-hour-label {
-      position: absolute;
-      top: 50%;
-      left: 10px;
-      transform: translateY(-50%);
-      font-size: 0.9rem;
-    }
-
-    .time-slots {
-      position: relative;
-      height: calc(100% - 50px);
-    }
-
-    .time-slot {
-      position: absolute;
-      border-right: 1px solid #f0f0f0;
-      height: 100%;
-    }
-
-    .operation {
-      position: absolute;
-      background: var(--secondary-color);
-      color: white;
-      border-radius: 4px;
-      padding: 8px;
-      overflow: hidden;
-      cursor: move;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      font-size: 0.9rem;
-      z-index: 5;
-      border-left: 3px solid rgba(0,0,0,0.2);
-    }
-
-    .operation:hover {
-      opacity: 0.9;
-    }
-
-    .operation .drag-handle {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 5px;
-      background: rgba(0,0,0,0.1);
-      cursor: ns-resize;
-    }
-
-    /* Форма добавления операции */
-    .operation-form {
-      padding: 20px;
-      background: white;
-      border-top: 1px solid var(--border-color);
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 500;
-    }
-
-    .form-control {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      font-size: 1rem;
-    }
-
-    .btn {
-      padding: 8px 16px;
-      background: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.2s;
-    }
-
-    .btn:hover {
-      background: #3367d6;
-    }
-
-    .btn-block {
-      display: block;
-      width: 100%;
-    }
-  </style>
 </head>
 <body>
 <div class="app-container">
@@ -307,19 +52,38 @@
 
     <div class="operation-form">
       <h2>Добавить операцию</h2>
-      <div class="form-group">
-        <label for="operation-name">Название операции</label>
-        <input type="text" id="operation-name" class="form-control" placeholder="Лазерная резка металла">
+      <button class="toggle-form-btn" id="toggle-form-btn">+ Добавить новую операцию</button>
+
+      <div class="add-operation-form" id="add-operation-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="new-operation-name">Название</label>
+            <input type="text" id="new-operation-name" class="form-control" placeholder="Лазерная резка металла">
+          </div>
+          <div class="form-group">
+            <label for="new-operation-duration">Длительность (мин)</label>
+            <input type="number" id="new-operation-duration" class="form-control" min="5" step="5" value="30">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="new-operation-description">Описание (необязательно)</label>
+          <textarea id="new-operation-description" class="form-control" rows="2"></textarea>
+        </div>
+        <button id="save-operation" class="btn">Сохранить операцию</button>
       </div>
+
       <div class="form-group">
         <label for="operation-start">Время начала</label>
         <input type="time" id="operation-start" class="form-control" step="300">
       </div>
-      <div class="form-group">
-        <label for="operation-duration">Длительность (минуты)</label>
-        <input type="number" id="operation-duration" class="form-control" min="5" step="5" value="30">
+      <button id="add-operation" class="btn btn-block">Добавить на временную шкалу</button>
+    </div>
+
+    <div class="available-operations">
+      <h3>Доступные операции</h3>
+      <div class="operations-list" id="operations-list">
+        <!-- Операции будут добавляться здесь динамически -->
       </div>
-      <button id="add-operation" class="btn btn-block">Добавить операцию</button>
     </div>
   </div>
 </div>
@@ -332,39 +96,28 @@
   let zoomLevel = 30; // минут на ячейку
   let operations = [];
 
+  // Массив доступных операций (будет загружаться из БД)
+  let availableOperations = [
+    { id: 1, name: "Лазерная резка металла", duration: 90, description: "Резка по чертежу №123" },
+    { id: 2, name: "Фрезеровка детали", duration: 75, description: "Фрезеровка пазов" },
+    { id: 3, name: "Покраска изделия", duration: 105, description: "Покраска в синий цвет" },
+    { id: 4, name: "Сборка узла", duration: 120, description: "Сборка по схеме А" }
+  ];
+
   // Инициализация приложения
   function initApp() {
     renderCalendar();
     updateDateDisplay();
     renderTimeline();
+    renderAvailableOperations();
 
-    // Загрузка тестовых данных
-    loadSampleData();
-  }
+    // Инициализация перетаскивания для доступных операций
+    initDragOperations();
 
-  // Загрузка тестовых данных
-  function loadSampleData() {
+    // Установка текущего времени в поле начала операции
     const now = new Date();
-    const sampleOperations = [
-      {
-        name: "Лазерная резка металла",
-        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0).toISOString(),
-        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30).toISOString()
-      },
-      {
-        name: "Фрезеровка детали",
-        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 0).toISOString(),
-        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 15).toISOString()
-      },
-      {
-        name: "Покраска изделия",
-        start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0).toISOString(),
-        end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 45).toISOString()
-      }
-    ];
-
-    operations = sampleOperations;
-    renderOperations();
+    document.getElementById('operation-start').value =
+            `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
   }
 
   // Отрисовка календаря
@@ -662,13 +415,138 @@
     });
   }
 
-  // Добавление новой операции
-  document.getElementById('add-operation').addEventListener('click', function() {
-    const name = document.getElementById('operation-name').value;
-    const startTime = document.getElementById('operation-start').value;
-    const duration = parseInt(document.getElementById('operation-duration').value);
+  // Отрисовка доступных операций
+  function renderAvailableOperations() {
+    const operationsList = document.getElementById('operations-list');
+    operationsList.innerHTML = '';
 
-    if (name && startTime && duration) {
+    availableOperations.forEach(op => {
+      const opElement = document.createElement('div');
+      opElement.className = 'operation-card';
+      opElement.dataset.id = op.id;
+      opElement.draggable = true;
+
+      opElement.innerHTML = `
+                    ${op.name} (${op.duration} мин)
+                    <span class="delete-btn" data-id="${op.id}">×</span>
+                `;
+
+      operationsList.appendChild(opElement);
+    });
+
+    // Обработчик удаления операций
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const id = parseInt(this.dataset.id);
+        deleteOperation(id);
+      });
+    });
+  }
+
+  // Инициализация перетаскивания доступных операций
+  function initDragOperations() {
+    document.querySelectorAll('.operation-card').forEach(card => {
+      card.addEventListener('dragstart', function(e) {
+        const id = parseInt(this.dataset.id);
+        const operation = availableOperations.find(op => op.id === id);
+        e.dataTransfer.setData('text/plain', JSON.stringify(operation));
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+    });
+
+    // Обработка сброса на временную шкалу
+    document.getElementById('time-slots').addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    });
+
+    document.getElementById('time-slots').addEventListener('drop', function(e) {
+      e.preventDefault();
+      const operationData = JSON.parse(e.dataTransfer.getData('text/plain'));
+
+      // Вычисляем позицию сброса
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const minuteWidth = rect.width / (24 * 60 / zoomLevel);
+      const minutes = Math.floor(x / minuteWidth) * zoomLevel;
+
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+
+      // Создаем новую операцию на временной шкале
+      const startDate = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              currentDate.getDate(),
+              hours,
+              mins
+      );
+
+      const endDate = new Date(
+              startDate.getTime() + operationData.duration * 60 * 1000
+      );
+
+      operations.push({
+        name: operationData.name,
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        description: operationData.description
+      });
+
+      renderOperations();
+    });
+  }
+
+  // Удаление операции из доступных
+  function deleteOperation(id) {
+    availableOperations = availableOperations.filter(op => op.id !== id);
+    renderAvailableOperations();
+  }
+
+  // Добавление новой операции в список доступных
+  document.getElementById('toggle-form-btn').addEventListener('click', function() {
+    const form = document.getElementById('add-operation-form');
+    form.style.display = form.style.display === 'block' ? 'none' : 'block';
+  });
+
+  document.getElementById('save-operation').addEventListener('click', function() {
+    const name = document.getElementById('new-operation-name').value;
+    const duration = parseInt(document.getElementById('new-operation-duration').value);
+    const description = document.getElementById('new-operation-description').value;
+
+    if (name && duration) {
+      // Генерируем временный ID (в реальном приложении будет приходить с сервера)
+      const newId = availableOperations.length > 0
+              ? Math.max(...availableOperations.map(op => op.id)) + 1
+              : 1;
+
+      availableOperations.push({
+        id: newId,
+        name: name,
+        duration: duration,
+        description: description
+      });
+
+      renderAvailableOperations();
+      initDragOperations();
+
+      // Очищаем форму
+      document.getElementById('new-operation-name').value = '';
+      document.getElementById('new-operation-duration').value = '30';
+      document.getElementById('new-operation-description').value = '';
+      document.getElementById('add-operation-form').style.display = 'none';
+    } else {
+      alert('Заполните название и длительность операции!');
+    }
+  });
+
+  // Добавление операции на временную шкалу
+  document.getElementById('add-operation').addEventListener('click', function() {
+    const startTime = document.getElementById('operation-start').value;
+    const selectedOperation = availableOperations[0]; // В реальном приложении нужно выбрать операцию
+
+    if (startTime && selectedOperation) {
       const [hours, minutes] = startTime.split(':').map(Number);
 
       const startDate = new Date(
@@ -680,23 +558,19 @@
       );
 
       const endDate = new Date(
-              startDate.getTime() + duration * 60 * 1000
+              startDate.getTime() + selectedOperation.duration * 60 * 1000
       );
 
       operations.push({
-        name: name,
+        name: selectedOperation.name,
         start: startDate.toISOString(),
-        end: endDate.toISOString()
+        end: endDate.toISOString(),
+        description: selectedOperation.description
       });
 
       renderOperations();
-
-      // Очищаем форму
-      document.getElementById('operation-name').value = '';
-      document.getElementById('operation-start').value = '';
-      document.getElementById('operation-duration').value = '30';
     } else {
-      alert('Заполните все поля!');
+      alert('Выберите операцию и укажите время начала!');
     }
   });
 
@@ -718,11 +592,6 @@
 
   // Инициализация при загрузке
   window.onload = function() {
-    // Устанавливаем текущее время в поле начала операции
-    const now = new Date();
-    document.getElementById('operation-start').value =
-            `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
     initApp();
   };
 </script>
