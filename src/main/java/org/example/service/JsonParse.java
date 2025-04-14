@@ -54,7 +54,6 @@ public class JsonParse {
             throw new RuntimeException(e);
         }
 
-        int count = 0;
         JsonNode valueArray = rootArray.get("value");
         List<Production> productions = new ArrayList<>();
         for (JsonNode value : valueArray) {
@@ -64,24 +63,25 @@ public class JsonParse {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-            count++;
         }
-        log.info("Количество записей: {}", count);
-        productions.forEach(System.out::println);
-
 
         for (Production production : productions) {
             List<Operation> operations = production.getOperations();
 
             for (Operation operation : operations) {
-                if (operation.getNomenclature() == null) {
-                    set.add(operation.getOperationKey());
-                    operation.setNomenclature(nomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
-                    System.out.println(operation);
 
-                }
-
+                operation.setNomenclature(nomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
+                //operation.setProduction(production);
+                operationRepo.save(operation);
+                //System.out.println(operation);
             }
+            if (productionRepo.existsByRefKey(production.getRefKey())) {
+                log.warn("Duplicate production ref key: " + production.getRefKey());
+            } else {
+                //System.out.println(production);
+                productionRepo.save(production);
+            }
+
         }
     }
 
@@ -95,9 +95,7 @@ public class JsonParse {
             throw new RuntimeException(e);
         }
 
-        int count = 0;
         JsonNode valueArray = rootArray.get("value");
-        List<Nomenclature> nomencList = new ArrayList<>();
         for (JsonNode value : valueArray) {
             try {
                 Nomenclature nomenc = mapper.treeToValue(value, Nomenclature.class);
@@ -105,8 +103,7 @@ public class JsonParse {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-            count++;
+
         }
-        log.info("Количество записей: {}", count);
     }
 }

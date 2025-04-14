@@ -42,7 +42,7 @@ public class Request {
         String url = odataUrl.getUrl();
         String response = request(url);
         jsonParse.parse(response);
-        nomenclatureLoad();
+        //nomenclatureLoad();
 
 
     }
@@ -50,9 +50,9 @@ public class Request {
     public void nomenclatureLoad() {
         for (String key : set) {
             System.out.println(key);
-            //String url = odataUrl.getUrl(key);
-            //String response2 = request(url);
-            //jsonParse.parseNum(response2);
+            String url = odataUrl.getUrl(key);
+            String response2 = request(url);
+            jsonParse.parseNum(response2);
         }
     }
 

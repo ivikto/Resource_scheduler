@@ -12,6 +12,9 @@ import lombok.Data;
 public class Operation {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
     @JsonProperty("Ref_Key")
     private String refKey;
 
@@ -22,6 +25,9 @@ public class Operation {
 
     @JsonProperty("Нормочасы")
     private double time;
+    @ManyToOne
+    @JoinColumn(name = "production_ref_key")
+    Production production;
 
 
 }

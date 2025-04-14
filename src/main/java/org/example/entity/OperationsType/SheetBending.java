@@ -1,4 +1,4 @@
-package org.example.entity.OperationsType;
+package org.example.entity.operationsType;
 
 public class SheetBending {
 }

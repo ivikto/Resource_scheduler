@@ -3,9 +3,7 @@ package org.example.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -17,10 +15,11 @@ import java.util.List;
 public class Production {
 
     @Id
+    @JsonProperty("Ref_Key")
+    @Column(unique = true)
+    private String refKey;
     @JsonProperty("Number")
     private String productionId; //Номер
-    @JsonProperty("Ref_Key")
-    private String refKey;
     @JsonProperty("СостояниеЗаказа_Key")
     private String condition; //Состояние
     @JsonProperty("Приоритет_Key")
@@ -32,7 +31,7 @@ public class Production {
     private LocalDateTime date;
     @JsonProperty("ДокументОснование")
     private String foundationDoc;
-    @OneToMany
+    @OneToMany(mappedBy = "production", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonProperty("Операции")
     private List<Operation> operations; //Операции
 
