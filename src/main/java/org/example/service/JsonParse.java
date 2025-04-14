@@ -11,6 +11,8 @@ import org.example.entity.Nomenclature;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.repo.NomenclatureRepo;
+import org.example.repo.OperationRepo;
+import org.example.repo.ProductionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,18 +29,24 @@ public class JsonParse {
     public static Set<String> set = new HashSet<>();
 
     private final NomenclatureRepo nomenclatureRepo;
+    private final OperationRepo operationRepo;
+    private final ProductionRepo productionRepo;
+
 
     public ObjectMapper mapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    public JsonNode rootArray;
 
     @Autowired
-    public JsonParse(NomenclatureRepo nomenclatureRepo) {
+    public JsonParse(NomenclatureRepo nomenclatureRepo, OperationRepo operationRepo, ProductionRepo productionRepo) {
         this.nomenclatureRepo = nomenclatureRepo;
+        this.operationRepo = operationRepo;
+        this.productionRepo = productionRepo;
     }
 
     public void parse(String json) {
-        JsonNode rootArray;
+
         try {
             rootArray = mapper.readTree(json);
         } catch (JsonProcessingException e) {
@@ -80,7 +88,6 @@ public class JsonParse {
 
     public void parseNum(String json) {
 
-        JsonNode rootArray;
         try {
             rootArray = mapper.readTree(json);
         } catch (JsonProcessingException e) {
