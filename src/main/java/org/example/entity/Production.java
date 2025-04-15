@@ -31,8 +31,10 @@ public class Production {
     private LocalDateTime date;
     @JsonProperty("ДокументОснование")
     private String foundationDoc;
-    @OneToMany(mappedBy = "production", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "production", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("Операции")
     private List<Operation> operations; //Операции
+    boolean finish = false;
+
 
 }

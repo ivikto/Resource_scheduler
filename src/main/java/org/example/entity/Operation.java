@@ -16,7 +16,7 @@ public class Operation {
     private int id;
 
     @JsonProperty("Ref_Key")
-    private String refKey;
+    private String operationRefKey;
 
     @JsonProperty("Операция_Key")
     private String operationKey;
@@ -24,9 +24,10 @@ public class Operation {
     private String nomenclature;
 
     @JsonProperty("Нормочасы")
-    private double time;
+    private double operationTime;
     @ManyToOne
     @JoinColumn(name = "production_ref_key")
+    @JsonBackReference
     Production production;
 
 

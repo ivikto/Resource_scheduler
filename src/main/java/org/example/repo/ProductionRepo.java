@@ -11,7 +11,7 @@ public interface ProductionRepo extends JpaRepository<Production, String> {
 
     boolean existsByRefKey(String refKey);
 
-    @EntityGraph(attributePaths = "operations")
-    @Query("SELECT p FROM Production p")
+
+    @Query("SELECT p FROM Production p LEFT JOIN FETCH p.operations")
     List<Production> findAllWithOperations();
 }

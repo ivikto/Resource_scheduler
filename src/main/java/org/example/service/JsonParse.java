@@ -46,42 +46,45 @@ public class JsonParse {
     }
 
     public void parse(String json) {
-
         try {
             rootArray = mapper.readTree(json);
+            JsonNode valueArray = rootArray.get("value");
+            List<Production> productions = new ArrayList<>();
+
+            // 1. Парсинг JSON в объекты
+            for (JsonNode value : valueArray) {
+                try {
+                    Production production = mapper.treeToValue(value, Production.class);
+                    productions.add(production);
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException("JSON parsing error", e);
+                }
+            }
+
+            // 2. Обработка операций
+            for (Production production : productions) {
+                List<Operation> operations = production.getOperations();
+
+                if (operations != null) {
+                    for (Operation operation : operations) {
+                        // Устанавливаем двунаправленную связь
+                        operation.setProduction(production);  // Важно!
+
+                        // Дополнительная обработка операции
+                        operation.setNomenclature(nomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
+                    }
+                }
+
+                // 3. Сохранение
+                if (productionRepo.existsByRefKey(production.getRefKey())) {
+                    log.warn("Duplicate production ref key: " + production.getRefKey());
+                } else {
+                    productionRepo.save(production);  // Каскадное сохранение сработает благодаря CascadeType.ALL
+                }
+            }
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        JsonNode valueArray = rootArray.get("value");
-        List<Production> productions = new ArrayList<>();
-        for (JsonNode value : valueArray) {
-            try {
-                Production production = mapper.treeToValue(value, Production.class);
-                productions.add(production);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        for (Production production : productions) {
-            List<Operation> operations = production.getOperations();
-
-            for (Operation operation : operations) {
-
-                operation.setNomenclature(nomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
-                //operation.setProduction(production);
-                operationRepo.save(operation);
-                //System.out.println(operation);
-            }
-            if (productionRepo.existsByRefKey(production.getRefKey())) {
-                log.warn("Duplicate production ref key: " + production.getRefKey());
-            } else {
-                //System.out.println(production);
-                productionRepo.save(production);
-            }
-
+            log.error("JSON processing error", e);
+            throw new RuntimeException("Failed to parse JSON", e);
         }
     }
 
