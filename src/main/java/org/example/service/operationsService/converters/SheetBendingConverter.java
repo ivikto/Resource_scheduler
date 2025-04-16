@@ -1,18 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
-import org.example.entity.operationsType.LaserCutter;
 import org.example.entity.operationsType.SheetBending;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SheetBendingConverter implements OperationConverter<SheetBending> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public SheetBending convert(Production production) {
@@ -23,7 +29,20 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
 
         double time = calculateTime(production.getOperations());
         sheetBending.setTime(time);
+        String name = getNumName(production);
+        sheetBending.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
 
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                sheetBending.getRefKey(),
+                sheetBending.getName(),
+                sheetBending.getTime())) {
+            log.warn("Duplicate oreration: " + sheetBending.getNomenclatureName());
+        } else {
+            if (sheetBending.getTime() != 0) {
+                operationsTypeRepo.save(sheetBending);
+            }
+        }
         return sheetBending;
     }
 
@@ -45,5 +64,13 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
     @Override
     public Class<SheetBending> getType() {
         return SheetBending.class;
+    }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
     }
 }

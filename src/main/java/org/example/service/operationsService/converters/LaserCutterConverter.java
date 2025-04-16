@@ -1,17 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.LaserCutter;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LaserCutterConverter implements OperationConverter<LaserCutter> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public LaserCutter convert(Production production) {
@@ -22,6 +29,20 @@ public class LaserCutterConverter implements OperationConverter<LaserCutter> {
 
         double time = calculateTime(production.getOperations());
         laserCutter.setTime(time);
+        String name = getNumName(production);
+        laserCutter.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
+
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                laserCutter.getRefKey(),
+                laserCutter.getName(),
+                laserCutter.getTime())) {
+            log.warn("Duplicate oreration: " + laserCutter.getNomenclatureName());
+        } else {
+            if (laserCutter.getTime() != 0) {
+                operationsTypeRepo.save(laserCutter);
+            }
+        }
 
         return laserCutter;
     }
@@ -46,5 +67,13 @@ public class LaserCutterConverter implements OperationConverter<LaserCutter> {
     @Override
     public Class<LaserCutter> getType() {
         return LaserCutter.class;
+    }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
     }
 }

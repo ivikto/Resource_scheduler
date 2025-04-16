@@ -1,18 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.MillingMachine;
-import org.example.entity.operationsType.MillingMachine;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MillingMachineConverter implements OperationConverter<MillingMachine> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public MillingMachine convert(Production production) {
@@ -23,17 +29,28 @@ public class MillingMachineConverter implements OperationConverter<MillingMachin
 
         double time = calculateTime(production.getOperations());
         millingMachine.setTime(time);
+        String name = getNumName(production);
+        millingMachine.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
 
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                millingMachine.getRefKey(),
+                millingMachine.getName(),
+                millingMachine.getTime())) {
+            log.warn("Duplicate oreration: " + millingMachine.getNomenclatureName());
+        } else {
+            if (millingMachine.getTime() != 0) {
+                operationsTypeRepo.save(millingMachine);
+            }
+        }
         return millingMachine;
     }
 
     @Override
     public List<String> getSupportedNomenclatures() {
         return List.of(
-                TypeOfOperations.LASER_WORKER_HOURS.getNomenclature(),
-                TypeOfOperations.LASER_CUTTING.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK2.getNomenclature()
+                TypeOfOperations.MILLING_PR.getNomenclature(),
+                TypeOfOperations.MILLING_WORKER_HOURS.getNomenclature()
         );
     }
 
@@ -48,4 +65,14 @@ public class MillingMachineConverter implements OperationConverter<MillingMachin
     public Class<MillingMachine> getType() {
         return MillingMachine.class;
     }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
+    }
+
+
 }

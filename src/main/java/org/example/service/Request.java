@@ -35,7 +35,6 @@ public class Request {
         this.auth = auth;
         this.jsonParse = jsonParse;
         this.odataUrl = odataUrl;
-
     }
 
     public void doRequest() {
@@ -43,6 +42,7 @@ public class Request {
         String response = request(url);
         jsonParse.parse(response);
         //nomenclatureLoad();
+        //getNameOfNomenclature();
 
 
     }
@@ -54,6 +54,13 @@ public class Request {
             String response2 = request(url);
             jsonParse.parseNum(response2);
         }
+    }
+
+    public String getNameOfNomenclature(String refKey) {
+        String url = odataUrl.makeNumUrl(refKey);
+        String name = jsonParse.parseNum(request(url));
+
+        return name;
     }
 
 

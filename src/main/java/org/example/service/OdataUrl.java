@@ -60,8 +60,8 @@ public class OdataUrl {
         return url.replaceAll(" ", "%20").replaceAll("'", "%27");
     }
 
-    // Ссылка на все Заказы на производство в статусе "В работе", Изготовитель "Цех, Пометка на удаление "false"
-    private String makeNumUrl(String refKey) {
+    // Ссылка на номенклатуру с фильтром по Ref_Key
+    public String makeNumUrl(String refKey) {
         String filterValue = "Ref_Key";
         String filter = "?$filter=";
         String filterByValue = URLEncoder.encode(filterValue, StandardCharsets.UTF_8);

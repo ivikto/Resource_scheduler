@@ -1,18 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.BandSaw;
-import org.example.entity.operationsType.LaserCleaner;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BandSawConverter implements OperationConverter<BandSaw> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public BandSaw convert(Production production) {
@@ -23,17 +29,29 @@ public class BandSawConverter implements OperationConverter<BandSaw> {
 
         double time = calculateTime(production.getOperations());
         bandSaw.setTime(time);
+        String name = getNumName(production);
+        bandSaw.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
 
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                bandSaw.getRefKey(),
+                bandSaw.getName(),
+                bandSaw.getTime())) {
+            log.warn("Duplicate oreration: " + bandSaw.getNomenclatureName());
+        } else {
+            if (bandSaw.getTime() != 0) {
+                operationsTypeRepo.save(bandSaw);
+            }
+        }
         return bandSaw;
     }
 
     @Override
     public List<String> getSupportedNomenclatures() {
         return List.of(
-                TypeOfOperations.LASER_WORKER_HOURS.getNomenclature(),
-                TypeOfOperations.LASER_CUTTING.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK2.getNomenclature()
+                TypeOfOperations.BANDSAW_WORKER_HOURS.getNomenclature(),
+                TypeOfOperations.BANDSAW_PR.getNomenclature()
+
         );
     }
 
@@ -48,4 +66,14 @@ public class BandSawConverter implements OperationConverter<BandSaw> {
     public Class<BandSaw> getType() {
         return BandSaw.class;
     }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
+    }
+
+
 }

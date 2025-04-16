@@ -34,6 +34,9 @@ public class Production {
     @OneToMany(mappedBy = "production", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("Операции")
     private List<Operation> operations; //Операции
+    private String manufacturedProductRefKey;
+    private String manufacturedProductName;
+
     boolean finish = false;
 
 

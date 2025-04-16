@@ -1,5 +1,8 @@
 package org.example.entity.operationsType;
 
+import jakarta.persistence.Entity;
+
+@Entity
 public class MillingMachine extends OperationType {
 
     public MillingMachine() {

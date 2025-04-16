@@ -1,18 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.LaserCleaner;
-import org.example.entity.operationsType.LaserCutter;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public LaserCleaner convert(Production production) {
@@ -23,17 +29,28 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
 
         double time = calculateTime(production.getOperations());
         laserCleaner.setTime(time);
+        String name = getNumName(production);
+        laserCleaner.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
 
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                laserCleaner.getRefKey(),
+                laserCleaner.getName(),
+                laserCleaner.getTime())) {
+            log.warn("Duplicate oreration: " + laserCleaner.getNomenclatureName());
+        } else {
+            if (laserCleaner.getTime() != 0) {
+                operationsTypeRepo.save(laserCleaner);
+            }
+        }
         return laserCleaner;
     }
 
     @Override
     public List<String> getSupportedNomenclatures() {
         return List.of(
-                TypeOfOperations.LASER_WORKER_HOURS.getNomenclature(),
-                TypeOfOperations.LASER_CUTTING.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK2.getNomenclature()
+                TypeOfOperations.LASER_CLEANING_PR.getNomenclature(),
+                TypeOfOperations.LASER_CLEANING.getNomenclature()
         );
     }
 
@@ -48,4 +65,14 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
     public Class<LaserCleaner> getType() {
         return LaserCleaner.class;
     }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
+    }
+
+
 }

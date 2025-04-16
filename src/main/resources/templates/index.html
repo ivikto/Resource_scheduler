@@ -30,26 +30,7 @@
     </div>
 
     <div class="calendar-days" id="calendar-days"></div>
-  </div>
-
-  <!-- Основная панель -->
-  <div class="main-panel">
-    <div class="timeline-header">
-      <div class="current-date" id="current-date">Понедельник, 1 июня 2023</div>
-      <div class="zoom-controls">
-        <span>Масштаб:</span>
-        <input type="range" min="5" max="60" step="5" value="30" class="zoom-slider" id="zoom-slider">
-        <span id="zoom-value">30 мин</span>
-      </div>
-    </div>
-
-    <div class="timeline-container">
-      <div class="timeline">
-        <div class="time-ruler" id="time-ruler"></div>
-        <div class="time-slots" id="time-slots"></div>
-      </div>
-    </div>
-
+    <!-- Блок добавить операцию -->
     <div class="operation-form">
       <h2>Добавить операцию</h2>
       <button class="toggle-form-btn" id="toggle-form-btn">+ Добавить новую операцию</button>
@@ -78,522 +59,57 @@
       </div>
       <button id="add-operation" class="btn btn-block">Добавить на временную шкалу</button>
     </div>
+    <!-- Блок добавить операцию -->
+  </div>
+
+  <!-- Основная панель -->
+  <div class="main-panel">
+    <div class="timeline-header">
+      <div class="current-date" id="current-date">Понедельник, 1 июня 2023</div>
+      <div class="zoom-controls">
+        <span>Масштаб:</span>
+        <input type="range" min="5" max="60" step="5" value="30" class="zoom-slider" id="zoom-slider">
+        <span id="zoom-value">30 мин</span>
+      </div>
+    </div>
+
+    <div class="timeline-container">
+      <div class="timeline">
+        <div class="time-ruler" id="time-ruler">
+          <!-- Часовые метки будут добавляться через JS -->
+        </div>
+        <div class="time-slots" id="time-slots"></div>
+      </div>
+    </div>
+
+
+
 
     <div class="available-operations">
       <h3>Доступные производственные операции</h3>
       <div class="operations-list" id="operations-list">
-        <!-- Операции будут добавляться здесь динамически -->
+        <div th:each="op : ${operations}"
+             class="operation-card"
+             th:data-operation-id="${op.id}"
+             th:data-operation-name="${op.name}"
+             th:data-operation-time="${op.time}"
+             draggable="true"
+             th:attr="data-tooltip=|ID: ${op.id}
+              RefKey: ${op.refKey}
+              Название: ${op.name}
+              Время: ${#numbers.formatDecimal(op.time, 1, 3)} мин
+              Приоритет: ${op.priority}
+              Номенклатура: ${op.nomenclatureName}|">
+          <span th:text="${op.name + ' (' + #numbers.formatDecimal(op.time, 1, 3) + ' мин)'}"></span>
+          <span class="delete-btn" th:data-id="${op.id}">×</span>
+        </div>
       </div>
     </div>
+
+
   </div>
 </div>
 
-<script>
-  // Текущая дата и настройки
-  let currentDate = new Date();
-  currentDate.setHours(0, 0, 0, 0);
-
-  let zoomLevel = 30; // минут на ячейку
-  let operations = [];
-
-  // Массив доступных операций (будет загружаться из БД)
-  let availableOperations = [
-    { id: 1, name: "Лазерная резка металла", duration: 90, description: "Резка по чертежу №123" },
-    { id: 2, name: "Фрезеровка детали", duration: 75, description: "Фрезеровка пазов" },
-    { id: 3, name: "Покраска изделия", duration: 105, description: "Покраска в синий цвет" },
-    { id: 4, name: "Сборка узла", duration: 120, description: "Сборка по схеме А" }
-  ];
-
-  // Инициализация приложения
-  function initApp() {
-    renderCalendar();
-    updateDateDisplay();
-    renderTimeline();
-    renderAvailableOperations();
-
-    // Инициализация перетаскивания для доступных операций
-    initDragOperations();
-
-    // Установка текущего времени в поле начала операции
-    const now = new Date();
-    document.getElementById('operation-start').value =
-            `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  }
-
-  // Отрисовка календаря
-  function renderCalendar() {
-    const calendarDays = document.getElementById('calendar-days');
-    calendarDays.innerHTML = '';
-
-    // Обновление заголовка календаря
-    const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-    document.getElementById('calendar-month-year').textContent =
-            `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-
-    // Получаем первый день месяца и количество дней
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    const daysInMonth = lastDay.getDate();
-
-    // Определяем день недели первого дня месяца (0 - воскресенье, 1 - понедельник и т.д.)
-    let firstDayOfWeek = firstDay.getDay();
-    if (firstDayOfWeek === 0) firstDayOfWeek = 7; // Делаем воскресенье 7-м днем
-
-    // Добавляем пустые ячейки для дней предыдущего месяца
-    for (let i = 1; i < firstDayOfWeek; i++) {
-      const prevMonthDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-      prevMonthDay.setDate(prevMonthDay.getDate() - (firstDayOfWeek - i - 1));
-
-      const dayElement = document.createElement('div');
-      dayElement.className = 'calendar-day other-month';
-      dayElement.textContent = prevMonthDay.getDate();
-      calendarDays.appendChild(dayElement);
-    }
-
-    // Добавляем дни текущего месяца
-    for (let i = 1; i <= daysInMonth; i++) {
-      const dayElement = document.createElement('div');
-      dayElement.className = 'calendar-day';
-      dayElement.textContent = i;
-
-      // Проверяем, является ли день текущим
-      if (i === currentDate.getDate() &&
-              currentDate.getMonth() === firstDay.getMonth() &&
-              currentDate.getFullYear() === firstDay.getFullYear()) {
-        dayElement.classList.add('current');
-      }
-
-      // Добавляем обработчик клика
-      dayElement.addEventListener('click', () => {
-        selectDate(i);
-      });
-
-      calendarDays.appendChild(dayElement);
-    }
-
-    // Добавляем пустые ячейки для дней следующего месяца
-    const totalCells = Math.ceil((firstDayOfWeek - 1 + daysInMonth) / 7) * 7;
-    const remainingCells = totalCells - (firstDayOfWeek - 1 + daysInMonth);
-
-    for (let i = 1; i <= remainingCells; i++) {
-      const dayElement = document.createElement('div');
-      dayElement.className = 'calendar-day other-month';
-      dayElement.textContent = i;
-      calendarDays.appendChild(dayElement);
-    }
-  }
-
-  // Выбор даты в календаре
-  function selectDate(day) {
-    currentDate = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            day
-    );
-    updateDateDisplay();
-    renderTimeline();
-  }
-
-  // Переключение месяцев
-  function changeMonth(offset) {
-    currentDate = new Date(
-            currentDate.getFullYear(),
-            currentDate.getMonth() + offset,
-            1
-    );
-    renderCalendar();
-  }
-
-  // Обновление отображения текущей даты
-  function updateDateDisplay() {
-    const daysOfWeek = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
-    const monthNames = ["января", "февраля", "марта", "апреля", "мая", "июня",
-      "июля", "августа", "сентября", "октября", "ноября", "декабря"];
-
-    document.getElementById('current-date').textContent =
-            `${daysOfWeek[currentDate.getDay()]}, ${currentDate.getDate()} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-  }
-
-  // Отрисовка временной шкалы
-  function renderTimeline() {
-    renderTimeRuler();
-    renderTimeSlots();
-    renderOperations();
-  }
-
-  // Отрисовка линейки времени
-  function renderTimeRuler() {
-    const timeRuler = document.getElementById('time-ruler');
-    timeRuler.innerHTML = '';
-
-    // Рассчитываем ширину одной минуты
-    const minutesInDay = 24 * 60;
-    const minuteWidth = 100 / (minutesInDay / zoomLevel);
-
-    // Добавляем часы
-    for (let hour = 0; hour < 24; hour++) {
-      const hourElement = document.createElement('div');
-      hourElement.className = 'time-ruler-hour';
-      hourElement.style.width = `${60 * minuteWidth}px`;
-
-      const hourLabel = document.createElement('div');
-      hourLabel.className = 'time-ruler-hour-label';
-      hourLabel.textContent = `${hour}:00`;
-
-      hourElement.appendChild(hourLabel);
-      timeRuler.appendChild(hourElement);
-    }
-  }
-
-  // Отрисовка временных слотов
-  function renderTimeSlots() {
-    const timeSlots = document.getElementById('time-slots');
-    timeSlots.innerHTML = '';
-
-    // Рассчитываем ширину одной минуты
-    const minutesInDay = 24 * 60;
-    const minuteWidth = 100 / (minutesInDay / zoomLevel);
-
-    // Добавляем слоты по zoomLevel минут
-    for (let i = 0; i < minutesInDay; i += zoomLevel) {
-      const slot = document.createElement('div');
-      slot.className = 'time-slot';
-      slot.style.left = `${(i / zoomLevel) * minuteWidth}%`;
-      slot.style.width = `${minuteWidth}%`;
-      timeSlots.appendChild(slot);
-    }
-  }
-
-  // Отрисовка операций
-  function renderOperations() {
-    const timeSlots = document.getElementById('time-slots');
-
-    // Удаляем старые операции
-    document.querySelectorAll('.operation').forEach(op => op.remove());
-
-    // Рассчитываем ширину одной минуты
-    const minuteWidth = 100 / (24 * 60 / zoomLevel);
-
-    operations.forEach((op, index) => {
-      const opStart = new Date(op.start);
-      const opEnd = new Date(op.end);
-
-      // Проверяем, относится ли операция к текущему дню
-      if (opStart.toDateString() === currentDate.toDateString()) {
-        // Вычисляем позицию и размеры
-        const startMinutes = opStart.getHours() * 60 + opStart.getMinutes();
-        const endMinutes = opEnd.getHours() * 60 + opEnd.getMinutes();
-        const durationMinutes = endMinutes - startMinutes;
-
-        const left = (startMinutes / zoomLevel) * minuteWidth;
-        const width = (durationMinutes / zoomLevel) * minuteWidth;
-
-        // Создаем элемент операции
-        const operationEl = document.createElement('div');
-        operationEl.className = 'operation';
-        operationEl.textContent = op.name;
-        operationEl.dataset.index = index;
-
-        operationEl.style.left = `${left}%`;
-        operationEl.style.width = `${width}%`;
-        operationEl.style.top = '10px';
-        operationEl.style.height = '40px';
-
-        // Добавляем элемент для изменения длительности
-        const dragHandle = document.createElement('div');
-        dragHandle.className = 'drag-handle';
-        operationEl.appendChild(dragHandle);
-
-        // Добавляем возможность перетаскивания
-        makeDraggable(operationEl, dragHandle);
-
-        timeSlots.appendChild(operationEl);
-      }
-    });
-  }
-
-  // Делаем операцию перетаскиваемой
-  function makeDraggable(element, resizeHandle) {
-    let isDragging = false;
-    let isResizing = false;
-    let startX, startY, startLeft, startTop, startWidth, startHeight;
-
-    element.addEventListener('mousedown', (e) => {
-      if (e.target === resizeHandle) {
-        // Начало изменения размера
-        isResizing = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startWidth = parseFloat(element.style.width);
-        startHeight = parseFloat(element.style.height);
-      } else {
-        // Начало перемещения
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startLeft = parseFloat(element.style.left);
-        startTop = parseFloat(element.style.top);
-      }
-
-      e.preventDefault();
-    });
-
-    document.addEventListener('mousemove', (e) => {
-      if (!isDragging && !isResizing) return;
-
-      e.preventDefault();
-
-      if (isDragging) {
-        // Перемещение операции
-        const dx = (e.clientX - startX) / window.innerWidth * 100;
-        const dy = e.clientY - startY;
-
-        element.style.left = `${startLeft + dx}%`;
-        element.style.top = `${startTop + dy}px`;
-      } else if (isResizing) {
-        // Изменение размера операции
-        const dy = e.clientY - startY;
-        const newHeight = startHeight + dy;
-
-        if (newHeight > 20) { // Минимальная высота
-          element.style.height = `${newHeight}px`;
-        }
-      }
-    });
-
-    document.addEventListener('mouseup', (e) => {
-      if (isDragging || isResizing) {
-        e.preventDefault();
-
-        // Обновляем данные операции
-        const index = element.dataset.index;
-        const operation = operations[index];
-        const opStart = new Date(operation.start);
-        const opEnd = new Date(operation.end);
-
-        // Рассчитываем новые временные параметры
-        const minuteWidth = 100 / (24 * 60 / zoomLevel);
-        const newLeft = parseFloat(element.style.left);
-        const newStartMinutes = (newLeft / minuteWidth) * zoomLevel;
-
-        if (isDragging) {
-          // Обновляем время начала
-          const newStartDate = new Date(
-                  currentDate.getFullYear(),
-                  currentDate.getMonth(),
-                  currentDate.getDate(),
-                  Math.floor(newStartMinutes / 60),
-                  newStartMinutes % 60
-          );
-
-          // Сохраняем длительность
-          const duration = (opEnd - opStart) / (1000 * 60);
-          const newEndDate = new Date(
-                  newStartDate.getTime() + duration * 60 * 1000
-          );
-
-          operations[index].start = newStartDate.toISOString();
-          operations[index].end = newEndDate.toISOString();
-        } else if (isResizing) {
-          // Обновляем время окончания
-          const newHeight = parseFloat(element.style.height);
-          const durationMinutes = newHeight / 40 * (opEnd - opStart) / (1000 * 60);
-          const newEndDate = new Date(
-                  opStart.getTime() + durationMinutes * 60 * 1000
-          );
-
-          operations[index].end = newEndDate.toISOString();
-        }
-
-        // Перерисовываем операции для точного позиционирования
-        renderOperations();
-      }
-
-      isDragging = false;
-      isResizing = false;
-    });
-  }
-
-  // Отрисовка доступных операций
-  function renderAvailableOperations() {
-    const operationsList = document.getElementById('operations-list');
-    operationsList.innerHTML = '';
-
-    availableOperations.forEach(op => {
-      const opElement = document.createElement('div');
-      opElement.className = 'operation-card';
-      opElement.dataset.id = op.id;
-      opElement.draggable = true;
-
-      opElement.innerHTML = `
-                    ${op.name} (${op.duration} мин)
-                    <span class="delete-btn" data-id="${op.id}">×</span>
-                `;
-
-      operationsList.appendChild(opElement);
-    });
-
-    // Обработчик удаления операций
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const id = parseInt(this.dataset.id);
-        deleteOperation(id);
-      });
-    });
-  }
-
-  // Инициализация перетаскивания доступных операций
-  function initDragOperations() {
-    document.querySelectorAll('.operation-card').forEach(card => {
-      card.addEventListener('dragstart', function(e) {
-        const id = parseInt(this.dataset.id);
-        const operation = availableOperations.find(op => op.id === id);
-        e.dataTransfer.setData('text/plain', JSON.stringify(operation));
-        e.dataTransfer.effectAllowed = 'copy';
-      });
-    });
-
-    // Обработка сброса на временную шкалу
-    document.getElementById('time-slots').addEventListener('dragover', function(e) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
-    });
-
-    document.getElementById('time-slots').addEventListener('drop', function(e) {
-      e.preventDefault();
-      const operationData = JSON.parse(e.dataTransfer.getData('text/plain'));
-
-      // Вычисляем позицию сброса
-      const rect = this.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const minuteWidth = rect.width / (24 * 60 / zoomLevel);
-      const minutes = Math.floor(x / minuteWidth) * zoomLevel;
-
-      const hours = Math.floor(minutes / 60);
-      const mins = minutes % 60;
-
-      // Создаем новую операцию на временной шкале
-      const startDate = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate(),
-              hours,
-              mins
-      );
-
-      const endDate = new Date(
-              startDate.getTime() + operationData.duration * 60 * 1000
-      );
-
-      operations.push({
-        name: operationData.name,
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        description: operationData.description
-      });
-
-      renderOperations();
-    });
-  }
-
-  // Удаление операции из доступных
-  function deleteOperation(id) {
-    availableOperations = availableOperations.filter(op => op.id !== id);
-    renderAvailableOperations();
-  }
-
-  // Добавление новой операции в список доступных
-  document.getElementById('toggle-form-btn').addEventListener('click', function() {
-    const form = document.getElementById('add-operation-form');
-    form.style.display = form.style.display === 'block' ? 'none' : 'block';
-  });
-
-  document.getElementById('save-operation').addEventListener('click', function() {
-    const name = document.getElementById('new-operation-name').value;
-    const duration = parseInt(document.getElementById('new-operation-duration').value);
-    const description = document.getElementById('new-operation-description').value;
-
-    if (name && duration) {
-      // Генерируем временный ID (в реальном приложении будет приходить с сервера)
-      const newId = availableOperations.length > 0
-              ? Math.max(...availableOperations.map(op => op.id)) + 1
-              : 1;
-
-      availableOperations.push({
-        id: newId,
-        name: name,
-        duration: duration,
-        description: description
-      });
-
-      renderAvailableOperations();
-      initDragOperations();
-
-      // Очищаем форму
-      document.getElementById('new-operation-name').value = '';
-      document.getElementById('new-operation-duration').value = '30';
-      document.getElementById('new-operation-description').value = '';
-      document.getElementById('add-operation-form').style.display = 'none';
-    } else {
-      alert('Заполните название и длительность операции!');
-    }
-  });
-
-  // Добавление операции на временную шкалу
-  document.getElementById('add-operation').addEventListener('click', function() {
-    const startTime = document.getElementById('operation-start').value;
-    const selectedOperation = availableOperations[0]; // В реальном приложении нужно выбрать операцию
-
-    if (startTime && selectedOperation) {
-      const [hours, minutes] = startTime.split(':').map(Number);
-
-      const startDate = new Date(
-              currentDate.getFullYear(),
-              currentDate.getMonth(),
-              currentDate.getDate(),
-              hours,
-              minutes
-      );
-
-      const endDate = new Date(
-              startDate.getTime() + selectedOperation.duration * 60 * 1000
-      );
-
-      operations.push({
-        name: selectedOperation.name,
-        start: startDate.toISOString(),
-        end: endDate.toISOString(),
-        description: selectedOperation.description
-      });
-
-      renderOperations();
-    } else {
-      alert('Выберите операцию и укажите время начала!');
-    }
-  });
-
-  // Изменение масштаба
-  document.getElementById('zoom-slider').addEventListener('input', function(e) {
-    zoomLevel = parseInt(e.target.value);
-    document.getElementById('zoom-value').textContent = `${zoomLevel} мин`;
-    renderTimeline();
-  });
-
-  // Навигация по месяцам
-  document.getElementById('prev-month').addEventListener('click', function() {
-    changeMonth(-1);
-  });
-
-  document.getElementById('next-month').addEventListener('click', function() {
-    changeMonth(1);
-  });
-
-  // Инициализация при загрузке
-  window.onload = function() {
-    initApp();
-  };
-</script>
+<script src="/scripts/TimeLineScript.js"></script>
 </body>
 </html>

@@ -1,17 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.Paint;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaintConverter implements OperationConverter<Paint> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public Paint convert(Production production) {
@@ -22,17 +29,29 @@ public class PaintConverter implements OperationConverter<Paint> {
 
         double time = calculateTime(production.getOperations());
         paint.setTime(time);
+        String name = getNumName(production);
+        paint.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
 
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                paint.getRefKey(),
+                paint.getName(),
+                paint.getTime())) {
+            log.warn("Duplicate oreration: " + paint.getNomenclatureName());
+        } else {
+            if (paint.getTime() != 0) {
+                operationsTypeRepo.save(paint);
+            }
+        }
         return paint;
     }
 
     @Override
     public List<String> getSupportedNomenclatures() {
         return List.of(
-                TypeOfOperations.LASER_WORKER_HOURS.getNomenclature(),
-                TypeOfOperations.LASER_CUTTING.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK2.getNomenclature()
+                TypeOfOperations.PAINTING_WORKER_HOURS.getNomenclature(),
+                TypeOfOperations.PAINTING_POWDER_COATING.getNomenclature(),
+                TypeOfOperations.PAINTING_POWDER_PRIMER.getNomenclature()
         );
     }
 
@@ -46,5 +65,13 @@ public class PaintConverter implements OperationConverter<Paint> {
     @Override
     public Class<Paint> getType() {
         return Paint.class;
+    }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
     }
 }

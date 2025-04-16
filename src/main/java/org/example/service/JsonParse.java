@@ -50,17 +50,27 @@ public class JsonParse {
             rootArray = mapper.readTree(json);
             JsonNode valueArray = rootArray.get("value");
             List<Production> productions = new ArrayList<>();
+            String NomenclaturaKey = null;
 
             // 1. Парсинг JSON в объекты
             for (JsonNode value : valueArray) {
                 try {
                     Production production = mapper.treeToValue(value, Production.class);
+                    JsonNode myNode = value.get("Продукция");
+                    for (JsonNode operation : myNode) {
+
+                        try {
+                            NomenclaturaKey = operation.path("Номенклатура_Key").asText();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    production.setManufacturedProductRefKey(NomenclaturaKey);
                     productions.add(production);
                 } catch (JsonProcessingException e) {
                     throw new RuntimeException("JSON parsing error", e);
                 }
             }
-
             // 2. Обработка операций
             for (Production production : productions) {
                 List<Operation> operations = production.getOperations();
@@ -74,7 +84,6 @@ public class JsonParse {
                         operation.setNomenclature(nomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
                     }
                 }
-
                 // 3. Сохранение
                 if (productionRepo.existsByRefKey(production.getRefKey())) {
                     log.warn("Duplicate production ref key: " + production.getRefKey());
@@ -88,9 +97,9 @@ public class JsonParse {
         }
     }
 
+    public String parseNum(String json) {
 
-    public void parseNum(String json) {
-
+        Nomenclature nomenc = null;
         try {
             rootArray = mapper.readTree(json);
         } catch (JsonProcessingException e) {
@@ -101,12 +110,14 @@ public class JsonParse {
         JsonNode valueArray = rootArray.get("value");
         for (JsonNode value : valueArray) {
             try {
-                Nomenclature nomenc = mapper.treeToValue(value, Nomenclature.class);
-                nomenclatureRepo.save(nomenc);
+                nomenc = mapper.treeToValue(value, Nomenclature.class);
+                //nomenclatureRepo.save(nomenc);
+
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
 
         }
+        return nomenc.getDescription();
     }
 }

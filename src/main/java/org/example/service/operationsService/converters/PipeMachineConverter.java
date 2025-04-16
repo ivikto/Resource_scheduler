@@ -1,17 +1,24 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.PipeMachine;
+import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PipeMachineConverter implements OperationConverter<PipeMachine> {
+
+    private final Request request;
+    private final OperationsTypeRepo operationsTypeRepo;
 
     @Override
     public PipeMachine convert(Production production) {
@@ -22,17 +29,28 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
 
         double time = calculateTime(production.getOperations());
         pipeMachine.setTime(time);
+        String name = getNumName(production);
+        pipeMachine.setNomenclatureName(name);
+        production.setManufacturedProductName(name);
 
+        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
+                pipeMachine.getRefKey(),
+                pipeMachine.getName(),
+                pipeMachine.getTime())) {
+            log.warn("Duplicate oreration: " + pipeMachine.getNomenclatureName());
+        } else {
+            if (pipeMachine.getTime() != 0) {
+                operationsTypeRepo.save(pipeMachine);
+            }
+        }
         return pipeMachine;
     }
 
     @Override
     public List<String> getSupportedNomenclatures() {
         return List.of(
-                TypeOfOperations.LASER_WORKER_HOURS.getNomenclature(),
-                TypeOfOperations.LASER_CUTTING.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK.getNomenclature(),
-                TypeOfOperations.LASER_FINISHING_WORK2.getNomenclature()
+                TypeOfOperations.PIPE_BENDING.getNomenclature(),
+                TypeOfOperations.PIPE_CNC_BENDING.getNomenclature()
         );
     }
 
@@ -46,5 +64,13 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
     @Override
     public Class<PipeMachine> getType() {
         return PipeMachine.class;
+    }
+
+    @Override
+    public String getNumName(Production production) {
+        String name = null;
+        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
+
+        return name;
     }
 }
