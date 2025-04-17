@@ -94,11 +94,9 @@
              th:data-operation-name="${op.name}"
              th:data-operation-time="${op.time}"
              draggable="true"
-             th:attr="data-tooltip=|ID: ${op.id}
-              RefKey: ${op.refKey}
+             th:attr="data-tooltip=|Номер ЗНП: ${op.number}
               Название: ${op.name}
               Время: ${#numbers.formatDecimal(op.time, 1, 3)} мин
-              Приоритет: ${op.priority}
               Номенклатура: ${op.nomenclatureName}|">
           <span th:text="${op.name + ' (' + #numbers.formatDecimal(op.time, 1, 3) + ' мин)'}"></span>
           <span class="delete-btn" th:data-id="${op.id}">×</span>

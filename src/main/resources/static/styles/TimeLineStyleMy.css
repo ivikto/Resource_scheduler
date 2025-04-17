@@ -1,0 +1,110 @@
+/* Основная разметка */
+.main_container {
+    display: grid;
+    grid-template-columns: 220px 1fr; /* Сайдбар 250px, остальное — правая часть */
+    grid-template-rows: 300px 1fr;   /* Таймлайн 300px, операции — остальное */
+    height: 100vh;
+
+    background-color: #333333;
+}
+
+.sidebar_container {
+    padding: 10px;
+    grid-row: span 2; /* Занимает обе строки (таймлайн + операции) */
+    background: white;
+    border-right: 1px solid #aaaaaa; /* Правильное указание границы */
+}
+
+.timeline_container {
+    background: white;
+    padding: 10px;
+    height: 300px; /* Фиксированная высота */
+    border-bottom: 1px solid #aaaaaa; /* Правильное указание границы */
+
+
+}
+
+.operations_container {
+    background: white;
+    padding: 10px;
+    overflow-y: auto;
+}
+/* Основная разметка */
+
+/* Операции */
+.operation_container {
+    background-color: #c0c0c0;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 3px;
+}
+
+.operations-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.operation-card {
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: grab;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+    position: relative;
+}
+
+.operation-card:hover {
+    background: #34a853;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: grab;
+    color: white;
+    font-size: 0.9rem;
+    position: relative;
+}
+/* Операции */
+
+/* Подсказки */
+.operation-card:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: max-content;
+    max-width: 300px;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    white-space: pre-line;
+    z-index: 1000;
+    font-size: 13px;
+    color: #333;
+    margin-top: 5px;
+}
+
+h2 {
+    font-size: 12px;!important;
+}
+
+.hours_container {
+    display: flex;
+    height: fit-content;
+    white-space: nowrap; /* Запрещаем перенос строк */
+    padding: 10px 0;     /* Отступы для красоты */
+}
+
+.hours {
+    width: 60px;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    border-right: 1px solid #f0f0f0; /* Правильное указание границы */
+    border-left: 1px solid #f0f0f0; /* Правильное указание границы */
+    text-align: center;
+    height: 250px;
+
+}

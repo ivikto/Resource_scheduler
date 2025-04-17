@@ -1,9 +1,8 @@
-// Текущая дата и настройки
+// TimeLineScript.js
 let currentDate = new Date();
 currentDate.setHours(0, 0, 0, 0);
-
 let zoomLevel = 30; // минут на ячейку
-let scheduledOperations = []; // Только запланированные операции
+let scheduledOperations = [];
 
 // Инициализация приложения
 function initApp() {
@@ -119,18 +118,22 @@ function renderTimeRuler() {
     const timeRuler = document.getElementById('time-ruler');
     timeRuler.innerHTML = '';
 
-    // Рассчитываем ширину часа в пикселях
-    const hourWidth = (60 / zoomLevel) * 60 * 2; // 2 часа на метку
+    // Фиксированная ширина часа (6 слотов по 10 минут = 120px)
+    const HOUR_WIDTH = 120;
 
-    for (let hour = 0; hour < 24; hour += 2) {
+    // Общая ширина контейнера (24 часа)
+    timeRuler.style.width = `${24 * HOUR_WIDTH}px`;
+
+    for (let hour = 0; hour < 24; hour++) {
         const hourElement = document.createElement('div');
         hourElement.className = 'time-ruler-hour';
-        hourElement.style.width = `${hourWidth}px`;
-        hourElement.style.left = `${hour * (60 / zoomLevel) * 60}px`;
+        hourElement.style.left = `${hour * HOUR_WIDTH}px`;
+        hourElement.style.width = `${HOUR_WIDTH}px`;
 
         const hourLabel = document.createElement('div');
         hourLabel.className = 'time-ruler-hour-label';
-        hourLabel.textContent = `${hour}:00 - ${hour+2}:00`;
+        hourLabel.textContent = `${hour.toString().padStart(2, '0')}:00`;
+        hourLabel.style.left = `${HOUR_WIDTH / 2 - 20}px`; // Центрируем метку
 
         hourElement.appendChild(hourLabel);
         timeRuler.appendChild(hourElement);
@@ -142,16 +145,22 @@ function renderTimeSlots() {
     const timeSlots = document.getElementById('time-slots');
     timeSlots.innerHTML = '';
 
-    // Ширина слота в пикселях
-    const slotWidth = 60; // 30 минут при zoomLevel=30
+    // Фиксированная ширина часа (6 слотов по 10 минут = 120px)
+    const HOUR_WIDTH = 120;
+    const SLOT_WIDTH = HOUR_WIDTH / 6; // 10 минут = 20px
 
-    // Создаем слоты для всех 24 часов
-    for (let i = 0; i < 24 * 60; i += zoomLevel) {
-        const slot = document.createElement('div');
-        slot.className = 'time-slot';
-        slot.style.left = `${i * (60 / zoomLevel)}px`;
-        slot.style.width = `${slotWidth}px`;
-        timeSlots.appendChild(slot);
+    // Общая ширина контейнера (24 часа)
+    timeSlots.style.width = `${24 * HOUR_WIDTH}px`;
+
+    // Создаем слоты (24 часа * 6 слотов = 144 слота)
+    for (let hour = 0; hour < 24; hour++) {
+        for (let slot = 0; slot < 6; slot++) {
+            const slotElement = document.createElement('div');
+            slotElement.className = 'time-slot';
+            slotElement.style.left = `${hour * HOUR_WIDTH + slot * SLOT_WIDTH}px`;
+            slotElement.style.width = `${SLOT_WIDTH}px`;
+            timeSlots.appendChild(slotElement);
+        }
     }
 }
 
@@ -159,6 +168,8 @@ function renderTimeSlots() {
 function renderScheduledOperations() {
     const timeSlots = document.getElementById('time-slots');
     timeSlots.querySelectorAll('.operation').forEach(op => op.remove());
+
+    const HOUR_WIDTH = 120; // Фиксированная ширина часа (120px)
 
     scheduledOperations.forEach((op, index) => {
         const opStart = new Date(op.start);
@@ -168,25 +179,36 @@ function renderScheduledOperations() {
         const durationMinutes = op.durationMinutes || (op.time * 60);
 
         // Позиция и ширина в пикселях
-        const left = startMinutes * (60 / zoomLevel);
-        const width = durationMinutes * (60 / zoomLevel);
+        const left = (startMinutes / 10) * 20; // 10 минут = 20px
+        const width = (durationMinutes / 10) * 20;
 
         const operationEl = document.createElement('div');
         operationEl.className = 'operation';
         operationEl.style.left = `${left}px`;
         operationEl.style.width = `${width}px`;
-        operationEl.textContent = `${op.name} (${(durationMinutes/60).toFixed(1)} ч)`;
+        operationEl.textContent = `${op.name} (${formatDuration(durationMinutes)})`;
         operationEl.dataset.index = index;
 
-        const dragHandle = document.createElement('div');
-        dragHandle.className = 'drag-handle';
-        operationEl.appendChild(dragHandle);
+        // Добавляем атрибут для всплывающей подсказки
+        operationEl.setAttribute('data-tooltip',
+            `Номер ЗНП: ${op.number || 'не указан'}\n` +
+            `Название: ${op.name}\n` +
+            `Время: ${(op.time * 60).toFixed(1)} мин\n` +
+            `Номенклатура: ${op.nomenclatureName || 'не указана'}`);
 
         timeSlots.appendChild(operationEl);
         makeDraggable(operationEl, index);
     });
 }
 
+// Вспомогательная функция для форматирования длительности
+function formatDuration(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    const formattedMins = mins > 0 ? mins.toFixed(2) + 'м' : '';
+
+    return `${hours > 0 ? hours + 'ч ' : ''}${formattedMins}`;
+}
 
 // Инициализация перетаскивания
 function initDragOperations() {
@@ -283,49 +305,45 @@ function scheduleOperation(operationData, startMinutes) {
 
 // Обновление функции makeDraggable для работы с пикселями
 function makeDraggable(element, index) {
-    let isDragging = false;
-    let isResizing = false;
-    let startX, startLeft, startWidth;
+    const SLOT_WIDTH = 20; // 10 минут = 20px
+    const MINUTES_PER_SLOT = 10;
 
     element.addEventListener('mousedown', function(e) {
-        if (e.target.classList.contains('drag-handle')) {
-            isResizing = true;
-            startX = e.clientX;
-            startWidth = parseFloat(element.style.width);
-        } else {
-            isDragging = true;
-            startX = e.clientX;
-            startLeft = parseFloat(element.style.left);
-        }
         e.preventDefault();
-    });
 
-    document.addEventListener('mousemove', function(e) {
-        if (!isDragging && !isResizing) return;
+        const startX = e.clientX;
+        const startLeft = parseFloat(element.style.left);
+        const width = parseFloat(element.style.width);
+        const slotsCount = Math.round(width / SLOT_WIDTH);
 
-        const timeSlots = document.getElementById('time-slots');
-        const rect = timeSlots.getBoundingClientRect();
-        const x = e.clientX - rect.left;
+        function moveHandler(e) {
+            const dx = e.clientX - startX;
+            let newLeft = startLeft + dx;
 
-        if (isDragging) {
-            const newLeft = Math.max(0, Math.min(x, 24*60*(60/zoomLevel) - element.offsetWidth));
+            // Ограничиваем перемещение и выравниваем по слотам
+            newLeft = Math.max(0, Math.min(newLeft, 24 * 6 * SLOT_WIDTH - width));
+            newLeft = Math.round(newLeft / SLOT_WIDTH) * SLOT_WIDTH;
+
             element.style.left = `${newLeft}px`;
-        } else if (isResizing) {
-            const newWidth = Math.max(30, x - parseFloat(element.style.left));
-            element.style.width = `${newWidth}px`;
         }
-    });
 
-    document.addEventListener('mouseup', function(e) {
-        if (isDragging || isResizing) {
-            updateOperationTime(
-                index,
-                parseFloat(element.style.left),
-                parseFloat(element.style.width)
-            );
+        function upHandler() {
+            document.removeEventListener('mousemove', moveHandler);
+            document.removeEventListener('mouseup', upHandler);
+
+            // Обновляем данные операции
+            const newLeft = parseFloat(element.style.left);
+            const startMinutes = (newLeft / SLOT_WIDTH) * MINUTES_PER_SLOT;
+
+            const newStart = new Date(scheduledOperations[index].start);
+            newStart.setHours(Math.floor(startMinutes / 60), startMinutes % 60);
+            scheduledOperations[index].start = newStart;
+
+            renderScheduledOperations();
         }
-        isDragging = false;
-        isResizing = false;
+
+        document.addEventListener('mousemove', moveHandler);
+        document.addEventListener('mouseup', upHandler);
     });
 }
 

@@ -23,4 +23,12 @@ public class MainController {
 
         return "index";
     }
+
+    @GetMapping("/timeline")
+    public String timeline(Model model) {
+        List<OperationType> operations = operationsTypeRepo.findAll();
+        model.addAttribute("operations", operations);
+
+        return "timeline";
+    }
 }

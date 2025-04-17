@@ -130,6 +130,7 @@ body {
     overflow: auto;
     position: relative;
     background: white;
+    max-height: 300px;
 }
 
 .timeline {
@@ -139,41 +140,39 @@ body {
 }
 
 .time-ruler {
-    position: sticky;
-    top: 0;
-    height: 50px;
-    background: white;
-    border-bottom: 1px solid #ddd;
-    z-index: 10;
-    display: flex;
+    position: relative;
+    height: 30px;
+    background-color: #f5f5f5;
+    overflow: hidden;
 }
 
 .time-ruler-hour {
-    position: relative;
-    flex: 1;
-    min-width: 120px; /* 2 часа при zoomLevel=30 */
-    border-right: 1px solid #ddd;
+    position: absolute;
+    height: 100%;
+    border-right: 1px solid #aaaaaa;
+    box-sizing: border-box;
 }
 
 .time-ruler-hour-label {
     position: absolute;
+    width: 40px;
+    text-align: center;
+    font-size: 14px;
     top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.9rem;
+    transform: translateY(-50%);
 }
 
 .time-slots {
     position: relative;
-    height: calc(100% - 50px);
-    background: white;
+    height: 130px;
+    background-color: #fff;
 }
 
 .time-slot {
     position: absolute;
     height: 100%;
-    width: 60px; /* 30 минут при zoomLevel=30 */
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solid #eee;
+    box-sizing: border-box;
 }
 
 .time-slots::before {
@@ -197,14 +196,41 @@ body {
 /* Стили операций */
 .operation {
     position: absolute;
-    background: #34a853;
+    height: 60px;
+    top: 5px;
+    background-color: #4CAF50;
     color: white;
+    padding: 5px;
     border-radius: 4px;
-    padding: 8px;
-    cursor: move;
-    z-index: 5;
+    box-sizing: border-box;
     overflow: hidden;
-    font-size: 0.9rem;
+    cursor: move;
+    user-select: none;
+    font-size: 12px;
+}
+
+/* Стиль для подсказки */
+.operation-tooltip {
+    position: absolute;
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    white-space: pre;
+    z-index: 100;
+    min-width: 250px;
+    text-align: left;
+    line-height: 1.5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none;
+}
+
+.operation:hover .operation-tooltip {
+    display: block;
 }
 
 .operation:hover {
@@ -282,7 +308,7 @@ body {
     padding: 20px;
     background: white;
     border-top: 1px solid #ddd;
-    max-height: 400px;
+    max-height: 600px;
     overflow-y: auto;
 }
 
@@ -382,6 +408,8 @@ body {
     margin-top: 5px;
 }
 
+
+
 /* Состояния перетаскивания */
 .drag-over {
     background-color: white !important;
@@ -392,4 +420,31 @@ body {
     opacity: 0.5;
     transform: scale(0.95);
     cursor: grabbing;
+}
+
+/* Стили для всплывающей подсказки */
+.operation::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: pre;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+    z-index: 100;
+    pointer-events: none;
+    min-width: 200px;
+    text-align: left;
+}
+
+.operation:hover::after {
+    opacity: 1;
+    visibility: visible;
 }
