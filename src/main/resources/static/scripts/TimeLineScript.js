@@ -6,15 +6,41 @@ let scheduledOperations = [];
 
 // Инициализация приложения
 function initApp() {
+    loadOperationsFromStorage(); // Загружаем сохраненные данные перед рендерингом
     renderCalendar();
     updateDateDisplay();
     renderTimeline();
+    document.getElementById('time-slots').addEventListener('click', function(e) {
+        if (e.target.classList.contains('delete-operation-btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const index = parseInt(e.target.dataset.index);
+            if (!isNaN(index)) {
+                deleteOperation(index);
+            }
+        }
+    });
     initDragOperations();
+
 }
 
 // Отрисовка календаря (остается без изменений)
 function renderCalendar() {
     const calendarDays = document.getElementById('calendar-days');
+    const nextMonth = document.getElementById('next-month');
+    const prevMonth = document.getElementById('prev-month');
+
+    nextMonth.addEventListener('click', () => {
+        changeMonth(1);
+        console.log('next month click');
+        return;
+    });
+    prevMonth.addEventListener('click', () => {
+        changeMonth(-1);
+        console.log('prev month click');
+        return;
+    });
+
     calendarDays.innerHTML = '';
 
     // Обновление заголовка календаря
@@ -89,6 +115,7 @@ function selectDate(day) {
 
 // Переключение месяцев (остается без изменений)
 function changeMonth(offset) {
+    console.log(offset)
     currentDate = new Date(
         currentDate.getFullYear(),
         currentDate.getMonth() + offset,
@@ -166,46 +193,80 @@ function renderTimeSlots() {
 
 // Отрисовка запланированных операций с правильным позиционированием
 function renderScheduledOperations() {
-    const timeSlots = document.getElementById('time-slots');
-    timeSlots.querySelectorAll('.operation').forEach(op => op.remove());
+    try {
+        const timeSlots = document.getElementById('time-slots');
+        if (!timeSlots) {
+            console.error('Time slots container not found');
+            return;
+        }
 
-    const HOUR_WIDTH = 120; // Фиксированная ширина часа (120px)
+        // Очистка предыдущих операций
+        timeSlots.querySelectorAll('.operation').forEach(op => op.remove());
 
-    scheduledOperations.forEach((op, index) => {
-        const opStart = new Date(op.start);
-        if (opStart.toDateString() !== currentDate.toDateString()) return;
+        const HOUR_WIDTH = 120;
 
-        const startMinutes = opStart.getHours() * 60 + opStart.getMinutes();
-        const durationMinutes = op.durationMinutes || (op.time * 60);
+        scheduledOperations.forEach((op, index) => {
+            if (!op || !op.start) {
+                console.warn('Invalid operation data at index:', index, op);
+                return;
+            }
 
-        // Позиция и ширина в пикселях
-        const left = (startMinutes / 10) * 20; // 10 минут = 20px
-        const width = (durationMinutes / 10) * 20;
+            const opStart = new Date(op.start);
+            if (opStart.toDateString() !== currentDate.toDateString()) return;
 
-        const operationEl = document.createElement('div');
-        operationEl.className = 'operation';
-        operationEl.style.left = `${left}px`;
-        operationEl.style.width = `${width}px`;
-        operationEl.textContent = `${op.name} (${formatDuration(durationMinutes)})`;
-        operationEl.dataset.index = index;
+            const durationMinutes = Number(op.durationMinutes) || Number(op.time) * 60 || 0;
+            const startMinutes = opStart.getHours() * 60 + opStart.getMinutes();
+            const left = (startMinutes / 10) * 20;
+            const width = (durationMinutes / 10) * 20;
 
-        // Добавляем атрибут для всплывающей подсказки
-        operationEl.setAttribute('data-tooltip',
-            `Номер ЗНП: ${op.number || 'не указан'}\n` +
-            `Название: ${op.name}\n` +
-            `Время: ${(op.time * 60).toFixed(1)} мин\n` +
-            `Номенклатура: ${op.nomenclatureName || 'не указана'}`);
+            if (isNaN(left) || isNaN(width)) {
+                console.error('Invalid time calculation for operation:', op);
+                return;
+            }
 
-        timeSlots.appendChild(operationEl);
-        makeDraggable(operationEl, index);
-    });
+            const operationEl = document.createElement('div');
+            operationEl.className = 'operation';
+            operationEl.style.left = `${left}px`;
+            operationEl.style.width = `${width}px`;
+            operationEl.dataset.index = index;
+
+            // Кнопка удаления с улучшенным обработчиком
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-operation-btn';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.title = 'Удалить операцию';
+            deleteBtn.dataset.index = index; // Дублируем индекс в кнопке
+
+            // Улучшенный обработчик
+            deleteBtn.onclick = function(e) {
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                const idx = parseInt(this.dataset.index);
+                if (!isNaN(idx)) {
+                    deleteOperation(idx);
+                }
+                return false;
+            };
+
+            const opText = document.createElement('span');
+            opText.className = 'operation-text';
+            opText.textContent = `${op.name || 'Без названия'} (${formatDuration(durationMinutes)})`;
+
+            operationEl.append(deleteBtn, opText);
+            timeSlots.appendChild(operationEl);
+
+            makeDraggable(operationEl, index);
+        });
+    } catch (error) {
+        console.error('Error in renderScheduledOperations:', error);
+    }
 }
 
 // Вспомогательная функция для форматирования длительности
 function formatDuration(minutes) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    const formattedMins = mins > 0 ? mins.toFixed(2) + 'м' : '';
+    const formattedMins = mins > 0 ? mins.toFixed(0) + 'м' : '';
 
     return `${hours > 0 ? hours + 'ч ' : ''}${formattedMins}`;
 }
@@ -300,50 +361,72 @@ function scheduleOperation(operationData, startMinutes) {
     };
 
     scheduledOperations.push(newOperation);
+    saveOperationsToStorage()
     renderScheduledOperations();
 }
 
 // Обновление функции makeDraggable для работы с пикселями
 function makeDraggable(element, index) {
     const SLOT_WIDTH = 20; // 10 минут = 20px
-    const MINUTES_PER_SLOT = 10;
+    let isDragging = false;
+    let startX, startLeft;
+    let moveHandler, upHandler;
 
     element.addEventListener('mousedown', function(e) {
-        e.preventDefault();
+        // Пропускаем клики по кнопке удаления
+        if (e.target.classList.contains('delete-operation-btn')) {
+            return;
+        }
 
-        const startX = e.clientX;
-        const startLeft = parseFloat(element.style.left);
-        const width = parseFloat(element.style.width);
-        const slotsCount = Math.round(width / SLOT_WIDTH);
+        isDragging = true;
+        startX = e.clientX;
+        startLeft = parseFloat(element.style.left);
 
-        function moveHandler(e) {
+        // Поднимаем элемент над другими
+        element.style.zIndex = '1000';
+        element.classList.add('dragging');
+
+        // Создаем обработчики
+        moveHandler = function(e) {
+            if (!isDragging) return;
+
             const dx = e.clientX - startX;
             let newLeft = startLeft + dx;
+            const width = parseFloat(element.style.width);
 
-            // Ограничиваем перемещение и выравниваем по слотам
             newLeft = Math.max(0, Math.min(newLeft, 24 * 6 * SLOT_WIDTH - width));
             newLeft = Math.round(newLeft / SLOT_WIDTH) * SLOT_WIDTH;
 
             element.style.left = `${newLeft}px`;
-        }
+        };
 
-        function upHandler() {
+        upHandler = function() {
+            if (!isDragging) return;
+
             document.removeEventListener('mousemove', moveHandler);
             document.removeEventListener('mouseup', upHandler);
 
             // Обновляем данные операции
             const newLeft = parseFloat(element.style.left);
-            const startMinutes = (newLeft / SLOT_WIDTH) * MINUTES_PER_SLOT;
+            const startMinutes = (newLeft / SLOT_WIDTH) * 10;
 
-            const newStart = new Date(scheduledOperations[index].start);
+            const op = scheduledOperations[index];
+            const newStart = new Date(op.start);
             newStart.setHours(Math.floor(startMinutes / 60), startMinutes % 60);
-            scheduledOperations[index].start = newStart;
+            op.start = newStart.toISOString();
 
-            renderScheduledOperations();
-        }
+            // Возвращаем стили
+            element.style.zIndex = '';
+            element.classList.remove('dragging');
+
+            saveOperationsToStorage();
+            isDragging = false;
+        };
 
         document.addEventListener('mousemove', moveHandler);
-        document.addEventListener('mouseup', upHandler);
+        document.addEventListener('mouseup', upHandler, { once: true });
+
+        e.preventDefault();
     });
 }
 
@@ -368,6 +451,7 @@ function updateOperationTime(index, leftPx, widthPx) {
     op.durationMinutes = durationMinutes;
 
     renderScheduledOperations();
+    saveOperationsToStorage()
 }
 
 // Изменение масштаба
@@ -399,3 +483,65 @@ document.addEventListener('click', function(e) {
         }
     }
 });
+
+
+
+// Сохранение положения операции на таймлайне после добавления
+function saveOperationsToStorage() {
+    localStorage.setItem('scheduledOperations', JSON.stringify(scheduledOperations));
+    localStorage.setItem('currentDate', currentDate.toISOString());
+}
+
+// Функция для загрузки данных при перезагрузке страницы
+function loadOperationsFromStorage() {
+    const savedOperations = localStorage.getItem('scheduledOperations');
+    const savedDate = localStorage.getItem('currentDate');
+
+    if (savedOperations) {
+        scheduledOperations = JSON.parse(savedOperations).map(op => ({
+            ...op,
+            start: new Date(op.start), // Преобразуем строку обратно в Date
+            end: new Date(op.end)
+        }));
+    }
+
+    if (savedDate) {
+        currentDate = new Date(savedDate);
+    }
+}
+
+// Удаление операции с таймлайна
+function deleteOperation(index) {
+    console.log('Deleting operation with index:', index);
+    if (index === undefined || index === null || isNaN(index)) {
+        console.error('Invalid index:', index);
+        return;
+    }
+
+    if (!confirm('Вы действительно хотите удалить эту операцию?')) {
+        return;
+    }
+
+    const timeSlots = document.getElementById('time-slots');
+    const operationEl = timeSlots.querySelector(`.operation[data-index="${index}"]`);
+    if (operationEl) {
+        operationEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+        operationEl.style.opacity = '0';
+        operationEl.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            if (operationEl.parentNode) {
+                operationEl.parentNode.removeChild(operationEl);
+            }
+
+            // Удаляем из массива и сохраняем
+            scheduledOperations.splice(index, 1);
+            saveOperationsToStorage();
+            renderScheduledOperations(); // Чтобы обновить индексы и повторно отрисовать
+        }, 300);
+    } else {
+        // Если элемент не найден, просто удалим из массива
+        scheduledOperations.splice(index, 1);
+        saveOperationsToStorage();
+        renderScheduledOperations();
+    }
+}

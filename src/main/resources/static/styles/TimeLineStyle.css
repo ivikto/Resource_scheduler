@@ -163,8 +163,11 @@ body {
 }
 
 .time-slots {
+    display: flex;
+    flex-direction: column;
+    height: 200px; /* или любая другая высота родителя */
     position: relative;
-    height: 130px;
+    overflow: visible;
     background-color: #fff;
 }
 
@@ -207,6 +210,53 @@ body {
     cursor: move;
     user-select: none;
     font-size: 12px;
+    -webkit-user-drag: none; /* Отключает перетаскивание для WebKit */
+    user-select: none; /* Запрещает выделение текста */
+    -webkit-tap-highlight-color: transparent; /* Убирает подсветку при касании на мобильных */
+    transition: left 0.2s ease; /* Плавное перемещение */
+    will-change: left; /* Оптимизация анимации */
+}
+
+.delete-operation-btn {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background: rgba(255, 0, 0, 0.7);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 1000;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+}
+
+.delete-operation-btn:hover {
+    background: rgba(255, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+.operation-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 15px;
+}
+
+.operation.fade-out {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.3s, transform 0.3s;
 }
 
 /* Стиль для подсказки */
@@ -387,28 +437,6 @@ body {
 .toggle-form-btn:hover {
     text-decoration: underline;
 }
-
-/* Подсказки */
-.operation-card:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 0;
-    width: max-content;
-    max-width: 300px;
-    background: #f9f9f9;
-    border: 1px solid #ccc;
-    padding: 8px 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    white-space: pre-line;
-    z-index: 1000;
-    font-size: 13px;
-    color: #333;
-    margin-top: 5px;
-}
-
-
 
 /* Состояния перетаскивания */
 .drag-over {

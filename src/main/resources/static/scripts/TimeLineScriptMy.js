@@ -1,3 +1,8 @@
+// Инициализация приложения
+function initApp() {
+    testFunction()
+}
+
 
 function testFunction() {
     const myConst = document.getElementById('hours_container');
@@ -15,14 +20,6 @@ function testFunction() {
     for (let i = 0; i < nums.length; i++) {
         myConst.innerHTML += nums[i]
     }
-
-
-
-}
-
-// Инициализация приложения
-function initApp() {
-    testFunction()
 }
 
 // Инициализация при загрузке
