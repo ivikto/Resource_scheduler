@@ -127,8 +127,8 @@ body {
 /* Стили таймлайна */
 .timeline-container {
     flex: 1;
-    overflow: auto;
-    position: relative;
+    overflow: visible;
+    position: static;
     background: white;
     max-height: 300px;
 }
@@ -136,7 +136,7 @@ body {
 .timeline {
     position: relative;
     height: 100%;
-    min-width: 2880px; /* 24 часа * 120px (для zoomLevel=30) */
+    min-width: 2880px;
 }
 
 .time-ruler {
@@ -165,10 +165,13 @@ body {
 .time-slots {
     display: flex;
     flex-direction: column;
-    height: 200px; /* или любая другая высота родителя */
-    position: relative;
+    height: 200px;
+    position: static;
     overflow: visible;
     background-color: #fff;
+    z-index: auto;
+    contain: none;
+    transform-style: preserve-3d;
 }
 
 .time-slot {
@@ -195,7 +198,6 @@ body {
     z-index: 1;
 }
 
-
 /* Стили операций */
 .operation {
     position: absolute;
@@ -206,15 +208,14 @@ body {
     padding: 5px;
     border-radius: 4px;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
     cursor: move;
     user-select: none;
     font-size: 12px;
-    -webkit-user-drag: none; /* Отключает перетаскивание для WebKit */
-    user-select: none; /* Запрещает выделение текста */
-    -webkit-tap-highlight-color: transparent; /* Убирает подсветку при касании на мобильных */
-    transition: left 0.2s ease; /* Плавное перемещение */
-    will-change: left; /* Оптимизация анимации */
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: left 0.2s ease;
+    will-change: left;
 }
 
 .delete-operation-btn {
@@ -259,44 +260,11 @@ body {
     transition: opacity 0.3s, transform 0.3s;
 }
 
-/* Стиль для подсказки */
-.operation-tooltip {
-    position: absolute;
-    bottom: calc(100% + 5px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 13px;
-    white-space: pre;
-    z-index: 100;
-    min-width: 250px;
-    text-align: left;
-    line-height: 1.5;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: none;
-}
-
-.operation:hover .operation-tooltip {
-    display: block;
-}
-
 .operation:hover {
     opacity: 0.9;
 }
 
-.operation .drag-handle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    cursor: e-resize;
-}
-
+.operation .drag-handle,
 .drag-handle {
     position: absolute;
     right: 0;
@@ -355,11 +323,14 @@ body {
 
 /* Доступные операции */
 .available-operations {
+    position: relative;
+    z-index: 0; /* Важно: 0 создает новый контекст без изоляции */
     padding: 20px;
     background: white;
     border-top: 1px solid #ddd;
     max-height: 600px;
     overflow-y: auto;
+    transform: translateZ(0); /* Активирует аппаратное ускорение */
 }
 
 .operations-list {
@@ -370,13 +341,30 @@ body {
 }
 
 .operation-card {
+    position: relative;
+    display: inline-block;
     background: #f5f5f5;
     border-radius: 4px;
     padding: 8px 12px;
     cursor: grab;
     border: 1px solid #ddd;
-    font-size: 0.9rem;
-    position: relative;
+    font-size: 12px;
+    z-index: 1; /* Базовый уровень для карточки */
+    transform-style: preserve-3d; /* Для 3D-контекста */
+}
+
+/* 3. Полностью переработанные стили подсказки */
+.operation-card::before {
+    content: '';
+    position: fixed; /* Критически важно! */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
 }
 
 .operation-card:hover {
@@ -440,7 +428,7 @@ body {
 
 /* Состояния перетаскивания */
 .drag-over {
-    background-color: white !important;
+    background-color: white;
     outline: 2px dashed #0096ff;
 }
 
@@ -450,29 +438,87 @@ body {
     cursor: grabbing;
 }
 
-/* Стили для всплывающей подсказки */
-.operation::after {
+/* Общие стили для всплывающих подсказок */
+[data-tooltip]::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 5px);
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
     color: white;
-    padding: 5px 10px;
+    padding: 8px 12px;
     border-radius: 4px;
     font-size: 12px;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s;
-    z-index: 100;
+    transition: opacity 0.2s ease;
+    z-index: 2147483647;
     pointer-events: none;
     min-width: 200px;
+    max-width: 300px;
+    width: max-content;
     text-align: left;
+    line-height: 1.4;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    will-change: transform, opacity;
 }
 
-.operation:hover::after {
+[data-tooltip]:hover::after {
     opacity: 1;
     visibility: visible;
 }
+
+.operation-card::after {
+    content: attr(data-tooltip);
+    position: fixed; /* Фиксированное позиционирование */
+    bottom: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%) translateZ(9999px);
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    max-width: 350px;
+    z-index: 9999; /* Максимальный приоритет */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    backdrop-filter: blur(2px);
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+.operation-card:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Специфичные позиции для разных элементов */
+.operation[data-tooltip]::after {
+    bottom: 100%;
+}
+
+/* 4. Механизм активации подсказки */
+.operation-card:hover::before,
+.operation-card:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 5. Гарантия видимости для всей цепочки родителей */
+html, body,
+.app-container,
+.main-panel,
+.available-operations {
+    overflow: visible !important;
+    contain: none !important;
+    transform-style: preserve-3d;
+}
+

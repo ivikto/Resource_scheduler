@@ -59,7 +59,6 @@
       </div>
       <button id="add-operation" class="btn btn-block">Добавить на временную шкалу</button>
     </div>
-    <button id="mydelbutton">Нажми</button>
     <!-- Блок добавить операцию -->
   </div>
 
@@ -83,9 +82,7 @@
       </div>
     </div>
 
-
-
-
+    <!-- Панель операций -->
     <div class="available-operations">
       <h3>Доступные производственные операции</h3>
       <div class="operations-list" id="operations-list">
@@ -94,17 +91,19 @@
              th:data-operation-id="${op.id}"
              th:data-operation-name="${op.name}"
              th:data-operation-time="${op.time}"
+             th:data-operation-number="${op.number}"
+             th:data-operation-nomenclature="${op.nomenclatureName}"
              draggable="true"
-             th:attr="data-tooltip=|Номер ЗНП: ${op.number}
-              Название: ${op.name}
-              Время: ${#numbers.formatDecimal(op.time, 1, 3)} мин
-              Номенклатура: ${op.nomenclatureName}|">
-          <span th:text="${op.name + ' (' + #numbers.formatDecimal(op.time, 1, 3) + ' мин)'}"></span>
+             th:attr="data-tooltip=${'Номер ЗНП: ' + op.number +
+                             '&#10;Операция: ' + op.name +
+                             '&#10;Время: ' + #numbers.formatDecimal(op.time,1,2) + ' мин' +
+                             '&#10;Номенклатура: ' + op.nomenclatureName}">
+          <span th:text="${op.name + ' (' + #numbers.formatDecimal(op.time, 1, 2) + ' мин)'}"></span>
           <span class="delete-btn" th:data-id="${op.id}">×</span>
         </div>
       </div>
     </div>
-
+    <!-- Панель операций -->
 
   </div>
 </div>

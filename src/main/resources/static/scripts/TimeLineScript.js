@@ -10,6 +10,7 @@ function initApp() {
     renderCalendar();
     updateDateDisplay();
     renderTimeline();
+    initMonthNavigation();
     document.getElementById('time-slots').addEventListener('click', function(e) {
         if (e.target.classList.contains('delete-operation-btn')) {
             e.preventDefault();
@@ -20,26 +21,57 @@ function initApp() {
             }
         }
     });
+    document.querySelectorAll('.operation-card').forEach(card => {
+        card.addEventListener('mousemove', function(e) {
+            this.style.setProperty('--mouse-x', `${e.clientX}px`);
+            this.style.setProperty('--mouse-y', `${e.clientY}px`);
+        });
+    });
     initDragOperations();
-
 }
-
-// Отрисовка календаря (остается без изменений)
-function renderCalendar() {
-    const calendarDays = document.getElementById('calendar-days');
+/* Смена месяцев в календаре */
+function initMonthNavigation() {
     const nextMonth = document.getElementById('next-month');
     const prevMonth = document.getElementById('prev-month');
 
     nextMonth.addEventListener('click', () => {
-        changeMonth(1);
+        handleNextMonth();
         console.log('next month click');
         return;
     });
     prevMonth.addEventListener('click', () => {
-        changeMonth(-1);
+        handlePrevMonth();
         console.log('prev month click');
         return;
     });
+
+}
+
+function handleNextMonth() {
+    changeMonth(1);
+}
+
+function handlePrevMonth() {
+    changeMonth(-1);
+}
+
+// Переключение месяцев
+function changeMonth(offset) {
+    console.log(offset)
+    currentDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + offset,
+        1
+    );
+    renderCalendar();
+}
+
+/* Смена месяцев в календаре */
+
+// Отрисовка календаря (остается без изменений)
+function renderCalendar() {
+    const calendarDays = document.getElementById('calendar-days');
+
 
     calendarDays.innerHTML = '';
 
@@ -113,16 +145,7 @@ function selectDate(day) {
     renderTimeline();
 }
 
-// Переключение месяцев (остается без изменений)
-function changeMonth(offset) {
-    console.log(offset)
-    currentDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + offset,
-        1
-    );
-    renderCalendar();
-}
+
 
 // Обновление отображения текущей даты (остается без изменений)
 function updateDateDisplay() {
@@ -195,10 +218,12 @@ function renderTimeSlots() {
 function renderScheduledOperations() {
     try {
         const timeSlots = document.getElementById('time-slots');
-        if (!timeSlots) {
-            console.error('Time slots container not found');
-            return;
-        }
+        if (!timeSlots) return;
+
+        // Создаем общий контейнер для подсказки
+        const tooltipContainer = document.createElement('div');
+        tooltipContainer.className = 'operation-tooltip';
+        document.body.appendChild(tooltipContainer);
 
         // Очистка предыдущих операций
         timeSlots.querySelectorAll('.operation').forEach(op => op.remove());
@@ -206,10 +231,7 @@ function renderScheduledOperations() {
         const HOUR_WIDTH = 120;
 
         scheduledOperations.forEach((op, index) => {
-            if (!op || !op.start) {
-                console.warn('Invalid operation data at index:', index, op);
-                return;
-            }
+            if (!op || !op.start) return;
 
             const opStart = new Date(op.start);
             if (opStart.toDateString() !== currentDate.toDateString()) return;
@@ -219,41 +241,57 @@ function renderScheduledOperations() {
             const left = (startMinutes / 10) * 20;
             const width = (durationMinutes / 10) * 20;
 
-            if (isNaN(left) || isNaN(width)) {
-                console.error('Invalid time calculation for operation:', op);
-                return;
-            }
+            if (isNaN(left) || isNaN(width)) return;
 
+            // Создаем элемент операции (без изменений структуры)
             const operationEl = document.createElement('div');
             operationEl.className = 'operation';
             operationEl.style.left = `${left}px`;
             operationEl.style.width = `${width}px`;
             operationEl.dataset.index = index;
 
-            // Кнопка удаления с улучшенным обработчиком
+            // Добавляем данные для подсказки в dataset
+            operationEl.dataset.tooltip = `
+Номер ЗНП: ${op.number || 'Без номера'}
+Название: ${op.name || 'Без названия'}
+Время: ${(durationMinutes/60).toFixed(1)} ч
+Начало: ${opStart.getHours().toString().padStart(2, '0')}:${opStart.getMinutes().toString().padStart(2, '0')}
+Номенклатура: ${op.nomenclatureName || 'Без названия'}
+            `.trim();
+
+            // Кнопка удаления (без изменений)
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'delete-operation-btn';
             deleteBtn.innerHTML = '×';
-            deleteBtn.title = 'Удалить операцию';
-            deleteBtn.dataset.index = index; // Дублируем индекс в кнопке
-
-            // Улучшенный обработчик
+            deleteBtn.dataset.index = index;
             deleteBtn.onclick = function(e) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
+                e.stopPropagation();
                 const idx = parseInt(this.dataset.index);
-                if (!isNaN(idx)) {
-                    deleteOperation(idx);
-                }
-                return false;
+                if (!isNaN(idx)) deleteOperation(idx);
             };
 
+            // Текст операции
             const opText = document.createElement('span');
             opText.className = 'operation-text';
             opText.textContent = `${op.name || 'Без названия'} (${formatDuration(durationMinutes)})`;
 
             operationEl.append(deleteBtn, opText);
             timeSlots.appendChild(operationEl);
+
+            // Обработчики для подсказки
+            operationEl.addEventListener('mouseenter', function(e) {
+                const rect = this.getBoundingClientRect();
+                tooltipContainer.textContent = this.dataset.tooltip;
+                tooltipContainer.style.left = `${rect.left}px`;
+                tooltipContainer.style.top = `${rect.top - tooltipContainer.offsetHeight - 5}px`;
+                tooltipContainer.style.visibility = 'visible';
+                tooltipContainer.style.opacity = '1';
+            });
+
+            operationEl.addEventListener('mouseleave', function() {
+                tooltipContainer.style.visibility = 'hidden';
+                tooltipContainer.style.opacity = '0';
+            });
 
             makeDraggable(operationEl, index);
         });
@@ -284,9 +322,13 @@ function initDragOperations() {
             const opData = {
                 id: this.dataset.operationId,
                 name: this.dataset.operationName,
+                numberZnp: this.dataset.operationNumber,
+                nomenclatureName: this.dataset.operationNomenclature,
                 time: timeHours, // Сохраняем в часах
                 durationMinutes: timeMinutes // Сохраняем оригинальное значение
             };
+            console.log('opdata')
+            console.log(opData)
 
             e.dataTransfer.setData('application/json', JSON.stringify(opData));
             this.classList.add('dragging');
@@ -354,11 +396,14 @@ function scheduleOperation(operationData, startMinutes) {
     const newOperation = {
         id: operationData.id || Date.now(),
         name: operationData.name,
+        number: operationData.numberZnp || 'Без номера',
+        nomenclatureName: operationData.nomenclatureName || 'Без номенклатуры',
         time: durationMinutes / 60,
         durationMinutes: durationMinutes,
         start: startDate.toISOString(),
         end: new Date(startDate.getTime() + durationMinutes * 60000).toISOString()
     };
+     console.log(newOperation)
 
     scheduledOperations.push(newOperation);
     saveOperationsToStorage()
