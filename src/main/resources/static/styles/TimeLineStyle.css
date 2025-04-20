@@ -35,7 +35,7 @@ body {
 }
 
 .calendar-title {
-    font-size: 1.2rem;
+    font-size: 18px;
     font-weight: 500;
 }
 
@@ -70,6 +70,7 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
+    font-size: 12px;
 }
 
 .calendar-day {
@@ -553,3 +554,42 @@ html, body,
 .clear-search-btn:hover {
     color: #aaaaaa;
 }
+
+/* Стили для вкладок ресурсов */
+.resource-tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.resource-tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    margin-right: 5px;
+    background: #f5f5f5;
+    border-radius: 5px 5px 0 0;
+    font-size: 12px;
+}
+
+.resource-tab.active {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+    font-weight: bold;
+}
+
+/* Стили для таймлайнов ресурсов */
+.resource-timelines {
+    position: relative;
+}
+
+.resource-timeline {
+    display: none;
+}
+
+.resource-timeline.active {
+    display: block;
+}
+

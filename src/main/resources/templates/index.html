@@ -73,12 +73,26 @@
       </div>
     </div>
 
-    <div class="timeline-container">
-      <div class="timeline">
-        <div class="time-ruler" id="time-ruler">
-          <!-- Часовые метки будут добавляться через JS -->
+    <!-- Добавляем вкладки для ресурсов -->
+    <div class="resource-tabs" id="resource-tabs">
+      <div th:each="resource : ${resources}"
+           class="resource-tab"
+           th:data-resource-id="${resource.id}"
+           th:text="${resource.name}">
+      </div>
+    </div>
+
+    <!-- Контейнер для таймлайнов ресурсов -->
+    <div class="resource-timelines" id="resource-timelines">
+      <div th:each="resource : ${resources}"
+           class="resource-timeline"
+           th:data-resource-id="${resource.id}">
+        <div class="timeline-container">
+          <div class="timeline">
+            <div class="time-ruler"></div>
+            <div class="time-slots"></div>
+          </div>
         </div>
-        <div class="time-slots" id="time-slots"></div>
       </div>
     </div>
 

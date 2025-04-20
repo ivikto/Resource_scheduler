@@ -25,21 +25,17 @@ public class OperationApiController {
 
     @GetMapping("/addInTimeLine/{id}")
     public void addInTimeLine(@PathVariable(value = "id") int id) {
-        log.info("Запрос получен для ID: {}", id);
+        log.info("Запрос addInTimeLine получен для ID: {}", id);
         OperationType operationType = operationsTypeRepo.findById(id).orElseThrow();
         operationType.setInTimeLine(true);
         operationsTypeRepo.save(operationType);
-        log.info("addInTimeLine - Выполнен");
-        log.info("operationType: {}", operationType);
     }
 
     @GetMapping("/delFromTimeLine/{id}")
     public void delFromTimeLine(@PathVariable(value = "id") int id) {
-        log.info("Запрос получен для ID: {}", id);
+        log.info("Запрос delFromTimeLine получен для ID: {}", id);
         OperationType operationType = operationsTypeRepo.findById(id).orElseThrow();
         operationType.setInTimeLine(false);
         operationsTypeRepo.save(operationType);
-        log.info("delFromTimeLine - Выполнен");
-        log.info("operationType: {}", operationType);
     }
 }
