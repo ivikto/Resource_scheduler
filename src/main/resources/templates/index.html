@@ -84,6 +84,10 @@
 
     <!-- Панель операций -->
     <div class="available-operations">
+      <div class="search-container">
+        <input type="text" id="operations-search" placeholder="Поиск операций..." class="search-input">
+        <button id="clear-search" class="clear-search-btn">×</button>
+      </div>
       <h3>Доступные производственные операции</h3>
       <div class="operations-list" id="operations-list">
         <div th:each="op : ${operations}"

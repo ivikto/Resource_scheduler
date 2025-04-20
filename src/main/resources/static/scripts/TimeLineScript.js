@@ -267,7 +267,7 @@ function renderScheduledOperations() {
             deleteBtn.onclick = function(e) {
                 e.stopPropagation();
                 const idx = parseInt(this.dataset.index);
-                if (!isNaN(idx)) deleteOperation(idx);
+                if (!isNaN(idx)) deleteOperation(idx, op.id);
             };
 
             // Текст операции
@@ -375,39 +375,106 @@ function initDragOperations() {
 }
 
 // Запланировать операцию
-function scheduleOperation(operationData, startMinutes) {
-    // Проверяем, чтобы операция не выходила за пределы 24 часов
-    const durationMinutes = operationData.durationMinutes || (operationData.time * 60);
-    const endMinutes = startMinutes + durationMinutes;
+async function scheduleOperation(operationData, startMinutes) {
+    try {
+        // Проверяем, чтобы операция не выходила за пределы 24 часов
+        const durationMinutes = operationData.durationMinutes || (operationData.time * 60);
+        const endMinutes = startMinutes + durationMinutes;
 
-    if (endMinutes > 24 * 60) {
-        alert('Операция не может выходить за пределы 24 часов');
-        return;
+        if (endMinutes > 24 * 60) {
+            throw new Error('Операция не может выходить за пределы 24 часов');
+        }
+
+        const startDate = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+            Math.floor(startMinutes / 60),
+            startMinutes % 60
+        );
+
+        const newOperation = {
+            id: operationData.id || Date.now(),
+            name: operationData.name,
+            number: operationData.numberZnp || 'Без номера',
+            nomenclatureName: operationData.nomenclatureName || 'Без номенклатуры',
+            time: durationMinutes / 60,
+            durationMinutes: durationMinutes,
+            start: startDate.toISOString(),
+            end: new Date(startDate.getTime() + durationMinutes * 60000).toISOString()
+        };
+
+        console.log('New operation:', newOperation);
+
+        // Добавляем операцию локально
+        scheduledOperations.push(newOperation);
+        saveOperationsToStorage();
+        renderScheduledOperations();
+
+        // Отправляем на сервер
+        await addInTimeLine(operationData.id);
+
+        console.log('Операция успешно запланирована и сохранена');
+    } catch (error) {
+        console.error('Ошибка при планировании операции:', error);
+
+        // Откатываем изменения в случае ошибки
+        if (operationData.id) {
+            scheduledOperations = scheduledOperations.filter(op => op.id !== operationData.id);
+            saveOperationsToStorage();
+            renderScheduledOperations();
+        }
+
+        alert(error.message);
     }
+}
 
-    const startDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        currentDate.getDate(),
-        Math.floor(startMinutes / 60),
-        startMinutes % 60
-    );
+async function addInTimeLine(id) {
+    try {
+        console.log('Adding to timeline, ID:', id);
+        const response = await fetch(`/api/addInTimeLine/${id}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
 
-    const newOperation = {
-        id: operationData.id || Date.now(),
-        name: operationData.name,
-        number: operationData.numberZnp || 'Без номера',
-        nomenclatureName: operationData.nomenclatureName || 'Без номенклатуры',
-        time: durationMinutes / 60,
-        durationMinutes: durationMinutes,
-        start: startDate.toISOString(),
-        end: new Date(startDate.getTime() + durationMinutes * 60000).toISOString()
-    };
-     console.log(newOperation)
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
+        }
 
-    scheduledOperations.push(newOperation);
-    saveOperationsToStorage()
-    renderScheduledOperations();
+        console.log('Операция успешно обновлена в базе данных');
+        return true;
+    } catch (error) {
+        console.error('Ошибка при сохранении на сервере:', error);
+        throw error; // Пробрасываем ошибку для обработки в scheduleOperation
+    }
+}
+
+async function delFromTimeLine(id) {
+    try {
+        console.log('Удаление из timeline, ID:', id);
+
+        const response = await fetch(`/api/delFromTimeLine/${id}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Ошибка сервера: ${response.status} - ${errorText}`);
+        }
+
+        // Если сервер не возвращает JSON, просто завершаем выполнение
+        console.log('Операция успешно удалена из timeline');
+        return true;
+    } catch (error) {
+        console.error('Ошибка при удалении из timeline:', error);
+        throw error;
+    }
 }
 
 // Обновление функции makeDraggable для работы с пикселями
@@ -529,7 +596,39 @@ document.addEventListener('click', function(e) {
     }
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('operations-search');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const operationCards = document.querySelectorAll('.operation-card');
 
+    // Функция поиска
+    function filterOperations() {
+        const searchTerm = searchInput.value.toLowerCase();
+
+        operationCards.forEach(card => {
+            const name = card.getAttribute('data-operation-name').toLowerCase();
+            const number = card.getAttribute('data-operation-number')?.toLowerCase() || '';
+            const nomenclature = card.getAttribute('data-operation-nomenclature').toLowerCase();
+            const time = card.getAttribute('data-operation-time');
+
+            const matches = name.includes(searchTerm) ||
+                number.includes(searchTerm) ||
+                nomenclature.includes(searchTerm) ||
+                time.includes(searchTerm);
+
+            card.style.display = matches ? 'block' : 'none';
+        });
+    }
+
+    // Обработчик ввода
+    searchInput.addEventListener('input', filterOperations);
+
+    // Очистка поиска
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        filterOperations();
+    });
+});
 
 // Сохранение положения операции на таймлайне после добавления
 function saveOperationsToStorage() {
@@ -556,8 +655,10 @@ function loadOperationsFromStorage() {
 }
 
 // Удаление операции с таймлайна
-function deleteOperation(index) {
-    console.log('Deleting operation with index:', index);
+async function deleteOperation(index, id) {
+    console.log('Deleting operation with index:', index, id);
+
+    // Проверка валидности индекса
     if (index === undefined || index === null || isNaN(index)) {
         console.error('Invalid index:', index);
         return;
@@ -568,25 +669,49 @@ function deleteOperation(index) {
     }
 
     const timeSlots = document.getElementById('time-slots');
-    const operationEl = timeSlots.querySelector(`.operation[data-index="${index}"]`);
-    if (operationEl) {
-        operationEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        operationEl.style.opacity = '0';
-        operationEl.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            if (operationEl.parentNode) {
-                operationEl.parentNode.removeChild(operationEl);
-            }
+    const operationEl = timeSlots?.querySelector(`.operation[data-index="${index}"]`);
 
-            // Удаляем из массива и сохраняем
-            scheduledOperations.splice(index, 1);
-            saveOperationsToStorage();
-            renderScheduledOperations(); // Чтобы обновить индексы и повторно отрисовать
-        }, 300);
-    } else {
-        // Если элемент не найден, просто удалим из массива
+    try {
+        // 1. Визуальное удаление (если элемент существует)
+        if (operationEl) {
+            operationEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            operationEl.style.opacity = '0';
+            operationEl.style.transform = 'scale(0.95)';
+        }
+
+        // 2. Сохраняем удаляемую операцию на случай отката
+        const deletedOperation = scheduledOperations[index];
+
+        // 3. Удаляем из локального хранилища
         scheduledOperations.splice(index, 1);
         saveOperationsToStorage();
-        renderScheduledOperations();
+
+        // 4. Вызываем delFromTimeLine и обрабатываем возможные ошибки
+        await delFromTimeLine(id);
+
+        // 5. Полное удаление элемента после успешного ответа сервера
+        if (operationEl?.parentNode) {
+            setTimeout(() => {
+                operationEl.parentNode.removeChild(operationEl);
+                renderScheduledOperations();
+            }, 300);
+        } else {
+            renderScheduledOperations();
+        }
+
+    } catch (error) {
+        console.error('Ошибка при удалении операции:', error);
+
+        // Восстанавливаем операцию в случае ошибки
+        scheduledOperations.splice(index, 0, deletedOperation);
+        saveOperationsToStorage();
+
+        // Восстанавливаем визуальное состояние
+        if (operationEl) {
+            operationEl.style.opacity = '1';
+            operationEl.style.transform = 'scale(1)';
+        }
+
+        alert('Не удалось удалить операцию: ' + error.message);
     }
 }

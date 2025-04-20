@@ -1,5 +1,7 @@
-* {
-    box-sizing: border-box;
+html, body {
+    overflow: hidden; /* Полностью отключаем прокрутку */
+    width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
 }
@@ -522,3 +524,32 @@ html, body,
     transform-style: preserve-3d;
 }
 
+.search-container {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 30px 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    max-width: 300px;
+}
+
+.clear-search-btn {
+    position: sticky;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+}
+
+.clear-search-btn:hover {
+    color: #aaaaaa;
+}

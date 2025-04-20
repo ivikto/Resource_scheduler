@@ -17,5 +17,6 @@ public class OperationType {
     private double time;
     private String priority;
     private String nomenclatureName;
-    boolean added = false;
+    private boolean inTimeLine = false;
+
 }
