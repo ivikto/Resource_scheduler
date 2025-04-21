@@ -7,5 +7,6 @@ public class Drilling extends OperationType {
 
     public Drilling() {
         this.name = "Сверление";
+        this.color = "#2196F3";
     }
 }

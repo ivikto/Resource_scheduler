@@ -3,7 +3,6 @@ package org.example.controllers;
 import lombok.RequiredArgsConstructor;
 import org.example.entity.Resources;
 import org.example.entity.operationsType.OperationType;
-import org.example.repo.OperationRepo;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.springframework.stereotype.Controller;
@@ -24,6 +23,7 @@ public class MainController {
     public String index(Model model) {
         List<OperationType> operations = operationsTypeRepo.findByNotInTimeLine();
         List<Resources> resources = resourcesRepo.findAll();
+
         model.addAttribute("operations", operations);
         model.addAttribute("resources", resources);
 

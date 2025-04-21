@@ -2,6 +2,7 @@ package org.example.entity.operationsType;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.example.entity.Resources;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -18,5 +19,5 @@ public class OperationType {
     private String priority;
     private String nomenclatureName;
     private boolean inTimeLine = false;
-
+    protected String color;
 }

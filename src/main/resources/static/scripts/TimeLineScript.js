@@ -7,7 +7,8 @@ let currentResourceId = null; // ID текущего выбранного рес
 
 // Инициализация приложения
 function initApp() {
-    currentDate = new Date();
+    const today = new Date();
+    currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
     loadOperationsFromStorage();
     renderCalendar();
     updateDateDisplay();
@@ -65,24 +66,24 @@ function renderCalendar() {
     let firstDayOfWeek = firstDay.getDay();
     if (firstDayOfWeek === 0) firstDayOfWeek = 7;
 
+    // Добавляем дни предыдущего месяца
     for (let i = 1; i < firstDayOfWeek; i++) {
-        const prevMonthDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
-        prevMonthDay.setDate(prevMonthDay.getDate() - (firstDayOfWeek - i - 1));
-
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day other-month';
-        dayElement.textContent = prevMonthDay.getDate();
         calendarDays.appendChild(dayElement);
     }
 
+    // Добавляем дни текущего месяца
+    const today = new Date();
     for (let i = 1; i <= daysInMonth; i++) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
         dayElement.textContent = i;
 
-        if (i === currentDate.getDate() &&
-            currentDate.getMonth() === firstDay.getMonth() &&
-            currentDate.getFullYear() === firstDay.getFullYear()) {
+        // Правильная проверка текущего дня
+        if (i === today.getDate() &&
+            currentDate.getMonth() === today.getMonth() &&
+            currentDate.getFullYear() === today.getFullYear()) {
             dayElement.classList.add('current');
         }
 
@@ -90,13 +91,13 @@ function renderCalendar() {
         calendarDays.appendChild(dayElement);
     }
 
+    // Добавляем дни следующего месяца
     const totalCells = Math.ceil((firstDayOfWeek - 1 + daysInMonth) / 7) * 7;
     const remainingCells = totalCells - (firstDayOfWeek - 1 + daysInMonth);
 
     for (let i = 1; i <= remainingCells; i++) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day other-month';
-        dayElement.textContent = i;
         calendarDays.appendChild(dayElement);
     }
 }
@@ -116,8 +117,9 @@ function updateDateDisplay() {
     const monthNames = ["января", "февраля", "марта", "апреля", "мая", "июня",
         "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 
-    document.getElementById('current-date').textContent =
-        `${daysOfWeek[currentDate.getDay()]}, ${currentDate.getDate()} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    // Форматируем дату для отображения
+    const formattedDate = `${daysOfWeek[currentDate.getDay()]}, ${currentDate.getDate()} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    document.getElementById('current-date').textContent = formattedDate;
 }
 
 /* Таймлайн */
@@ -576,9 +578,9 @@ function loadOperationsFromStorage() {
         scheduledOperations = JSON.parse(savedOperations);
     }
 
-    if (savedDate) {
-        currentDate = new Date(savedDate);
-    }
+    // if (savedDate) {
+    //     currentDate = new Date(savedDate);
+    // }
 
     if (savedResourceId) {
         currentResourceId = savedResourceId;
