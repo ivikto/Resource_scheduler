@@ -18795,3 +18795,54 @@ com.fasterxml.jackson.databind.exc.InvalidDefinitionException: No serializer fou
 2025-04-22 15:58:17 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2025-04-22 15:58:17 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2025-04-22 15:58:17 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2025-04-22 15:58:18 INFO  org.example.AppStarter - Starting AppStarter using Java 23.0.1 with PID 10072 (C:\Java\myProg\Resource_scheduler\target\classes started by admin in C:\Java\myProg\Resource_scheduler)
+2025-04-22 15:58:18 INFO  org.example.AppStarter - No active profile set, falling back to 1 default profile: "default"
+2025-04-22 15:58:18 INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-04-22 15:58:18 INFO  o.s.b.d.e.DevToolsPropertyDefaultsPostProcessor - For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-04-22 15:58:19 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-04-22 15:58:19 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 31 ms. Found 6 JPA repository interfaces.
+2025-04-22 15:58:19 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-04-22 15:58:19 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2025-04-22 15:58:19 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-04-22 15:58:19 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.39]
+2025-04-22 15:58:19 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-04-22 15:58:19 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 709 ms
+2025-04-22 15:58:19 INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-04-22 15:58:19 INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.11.Final
+2025-04-22 15:58:19 INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-04-22 15:58:19 INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-04-22 15:58:19 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-04-22 15:58:20 INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@757c88a9
+2025-04-22 15:58:20 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-04-22 15:58:20 INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.4
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-04-22 15:58:20 INFO  o.h.id.enhanced.TableGenerator - HHH000398: Explicit segment value for id generator [hibernate_sequences.sequence_name] suggested; using default [default]
+2025-04-22 15:58:20 INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-04-22 15:58:21 INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-04-22 15:58:21 INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-04-22 15:58:21 WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-04-22 15:58:21 INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page template: index
+2025-04-22 15:58:21 INFO  o.s.b.d.a.OptionalLiveReloadServer - LiveReload server is running on port 35729
+2025-04-22 15:58:21 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2025-04-22 15:58:21 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-04-22 15:58:21 INFO  org.example.AppStarter - Started AppStarter in 3.18 seconds (process running for 3.849)
+2025-04-22 15:58:21 INFO  org.example.service.Runner - Data Loaded
+2025-04-22 15:58:23 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-04-22 15:58:23 INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-04-22 15:58:23 INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 0 ms
+2025-04-22 15:58:23 INFO  o.e.c.OperationApiController - Запрос addInTimeLine получен для ID: 963
+2025-04-22 15:58:57 INFO  o.e.c.OperationApiController - Запрос delFromTimeLine получен для ID: 963
+2025-04-22 15:58:58 INFO  o.e.c.OperationApiController - Запрос delFromTimeLine получен для ID: 995
+2025-04-22 15:59:00 INFO  o.e.c.OperationApiController - Запрос delFromTimeLine получен для ID: 1006
+2025-04-22 15:59:01 INFO  o.e.c.OperationApiController - Запрос delFromTimeLine получен для ID: 977
+2025-04-22 15:59:09 WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.web.method.annotation.MethodArgumentTypeMismatchException: Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'int'; For input string: "1745317981404"]
+2025-04-22 16:13:38 INFO  o.e.c.OperationApiController - Запрос addInTimeLine получен для ID: 1007
+2025-04-22 16:14:45 INFO  o.e.c.OperationApiController - Запрос addInTimeLine получен для ID: 977
+2025-04-22 16:47:46 INFO  o.e.c.OperationApiController - Запрос addInTimeLine получен для ID: 1006
+2025-04-22 16:49:32 INFO  o.e.c.OperationApiController - Запрос addInTimeLine получен для ID: 1012
