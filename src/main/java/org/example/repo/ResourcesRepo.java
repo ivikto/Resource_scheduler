@@ -1,0 +1,11 @@
+package org.example.repo;
+
+import org.example.entity.Resources;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface ResourcesRepo extends JpaRepository<Resources, Integer> {
+
+    Resources findFirstByName(String name);
+}
