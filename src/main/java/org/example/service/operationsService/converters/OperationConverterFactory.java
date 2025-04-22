@@ -1,6 +1,7 @@
 package org.example.service.operationsService.converters;
 
 import lombok.RequiredArgsConstructor;
+import org.example.repo.ResourcesRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 public class OperationConverterFactory {
 
     private final List<OperationConverter<?>> converters;
+    private final ResourcesRepo resourcesRepo;
 
     @SuppressWarnings("unchecked")
     public <T> OperationConverter<T> getConverter(Class<T> type) {

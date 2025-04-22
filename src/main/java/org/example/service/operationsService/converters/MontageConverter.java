@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.Montage;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class MontageConverter implements OperationConverter<Montage> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public Montage convert(Production production) {
@@ -26,6 +28,7 @@ public class MontageConverter implements OperationConverter<Montage> {
         montage.setRefKey(production.getRefKey());
         montage.setNumber(production.getProductionId());
         montage.setPriority(production.getPriority());
+        montage.setResource(resourcesRepo.findFirstByName("Montage"));
 
         double time = calculateTime(production.getOperations());
         montage.setTime(time);

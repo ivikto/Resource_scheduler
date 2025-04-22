@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.Printer;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class PrinterConverter implements OperationConverter<Printer> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public Printer convert(Production production) {
@@ -26,6 +28,7 @@ public class PrinterConverter implements OperationConverter<Printer> {
         printer.setRefKey(production.getRefKey());
         printer.setNumber(production.getProductionId());
         printer.setPriority(production.getPriority());
+        printer.setResource(resourcesRepo.findFirstByName("Printer"));
 
         double time = calculateTime(production.getOperations());
         printer.setTime(time);

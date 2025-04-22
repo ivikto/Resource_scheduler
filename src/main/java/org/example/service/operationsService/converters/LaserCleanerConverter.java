@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.LaserCleaner;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public LaserCleaner convert(Production production) {
@@ -26,6 +28,7 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
         laserCleaner.setRefKey(production.getRefKey());
         laserCleaner.setNumber(production.getProductionId());
         laserCleaner.setPriority(production.getPriority());
+        laserCleaner.setResource(resourcesRepo.findFirstByName("LaserCleaner"));
 
         double time = calculateTime(production.getOperations());
         laserCleaner.setTime(time);

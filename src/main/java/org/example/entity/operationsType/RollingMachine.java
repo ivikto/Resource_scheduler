@@ -7,5 +7,6 @@ public class RollingMachine extends OperationType {
 
     public RollingMachine() {
         this.name = "Вальцеватель";
+        this.color = "#673AB7";
     }
 }

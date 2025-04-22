@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.PipeMachine;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public PipeMachine convert(Production production) {
@@ -26,6 +28,7 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
         pipeMachine.setRefKey(production.getRefKey());
         pipeMachine.setNumber(production.getProductionId());
         pipeMachine.setPriority(production.getPriority());
+        pipeMachine.setResource(resourcesRepo.findFirstByName("PipeMachine"));
 
         double time = calculateTime(production.getOperations());
         pipeMachine.setTime(time);

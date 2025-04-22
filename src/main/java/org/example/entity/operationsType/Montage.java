@@ -7,5 +7,6 @@ public class Montage extends OperationType {
 
     public Montage() {
         this.name = "Монтаж";
+        this.color = "#795548";
     }
 }

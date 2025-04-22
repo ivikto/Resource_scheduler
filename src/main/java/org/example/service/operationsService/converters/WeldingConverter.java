@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.Welding;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class WeldingConverter implements OperationConverter<Welding> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public Welding convert(Production production) {
@@ -26,6 +28,7 @@ public class WeldingConverter implements OperationConverter<Welding> {
         welding.setRefKey(production.getRefKey());
         welding.setNumber(production.getProductionId());
         welding.setPriority(production.getPriority());
+        welding.setResource(resourcesRepo.findFirstByName("Welding"));
 
         double time = calculateTime(production.getOperations());
         welding.setTime(time);

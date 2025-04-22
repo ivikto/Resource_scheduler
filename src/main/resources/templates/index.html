@@ -1,114 +1,137 @@
 <!DOCTYPE html>
 <html lang="ru">
 <link rel="stylesheet" href="/styles/TimeLineStyle.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Производственный планировщик</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Производственный планировщик</title>
 
 </head>
 <body>
+<header th:insert="~{parts/header :: header}"></header>
 <div class="app-container">
-  <!-- Панель календаря -->
-  <div class="calendar-panel">
-    <div class="calendar-header">
-      <div class="calendar-title" id="calendar-month-year">Июнь 2023</div>
-      <div class="calendar-nav">
-        <button id="prev-month">&lt;</button>
-        <button id="next-month">&gt;</button>
-      </div>
-    </div>
+    <!-- Панель календаря -->
+    <div class="calendar-panel">
+        <div class="calendar-body">
+            <div class="calendar-header">
+                <div class="calendar-title" id="calendar-month-year">Июнь 2023</div>
+                <div class="calendar-nav">
+                    <button id="prev-month">&lt;</button>
+                    <button id="next-month">&gt;</button>
+                </div>
+            </div>
 
-    <div class="calendar-grid">
-      <div class="calendar-weekday">Пн</div>
-      <div class="calendar-weekday">Вт</div>
-      <div class="calendar-weekday">Ср</div>
-      <div class="calendar-weekday">Чт</div>
-      <div class="calendar-weekday">Пт</div>
-      <div class="calendar-weekday">Сб</div>
-      <div class="calendar-weekday">Вс</div>
-    </div>
-    <div class="calendar-days" id="calendar-days"></div>
-
-    <!-- Блок добавить операцию -->
-    <div class="operation-form">
-      <h2>Добавить операцию</h2>
-      <button class="toggle-form-btn" id="toggle-form-btn">+ Добавить новую операцию</button>
-
-      <div class="add-operation-form" id="add-operation-form">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="new-operation-name">Название</label>
-            <input type="text" id="new-operation-name" class="form-control" placeholder="Лазерная резка металла">
-          </div>
-          <div class="form-group">
-            <label for="new-operation-duration">Длительность (мин)</label>
-            <input type="number" id="new-operation-duration" class="form-control" min="5" step="5" value="30">
-          </div>
+            <div class="calendar-grid">
+                <div class="calendar-weekday">Пн</div>
+                <div class="calendar-weekday">Вт</div>
+                <div class="calendar-weekday">Ср</div>
+                <div class="calendar-weekday">Чт</div>
+                <div class="calendar-weekday">Пт</div>
+                <div class="calendar-weekday">Сб</div>
+                <div class="calendar-weekday">Вс</div>
+            </div>
+            <div class="calendar-days" id="calendar-days"></div>
         </div>
-        <div class="form-group">
-          <label for="new-operation-description">Описание (необязательно)</label>
-          <textarea id="new-operation-description" class="form-control" rows="2"></textarea>
+            <!-- Блок добавить операцию -->
+        <div class="operation-form">
+            <h2>Добавить операцию</h2>
+
+            <div class="form-group">
+                <label for="new-operation-name">Наименование операции</label>
+                <input type="text" id="new-operation-name" class="form-control-name"
+                       placeholder="Введите название операции" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="operation-start">Время начала</label>
+                    <input type="time" id="operation-start" class="form-control-time" step="300" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-operation-duration">Продолжительность</label>
+                    <input type="number" id="new-operation-duration" class="form-control-duration"
+                           min="5" step="5" value="30" required>
+                </div>
+            </div>
+
+            <button id="add-operation" class="btn-btn-block">Добавить</button>
         </div>
-        <button id="save-operation" class="btn">Сохранить операцию</button>
-      </div>
-
-      <div class="form-group">
-        <label for="operation-start">Время начала</label>
-        <input type="time" id="operation-start" class="form-control" step="300">
-      </div>
-      <button id="add-operation" class="btn btn-block">Добавить на временную шкалу</button>
-    </div>
-    <button id="mydelbutton">Нажми</button>
-    <!-- Блок добавить операцию -->
-  </div>
-
-  <!-- Основная панель -->
-  <div class="main-panel">
-    <div class="timeline-header">
-      <div class="current-date" id="current-date">Понедельник, 1 июня 2023</div>
-      <div class="zoom-controls">
-        <span>Масштаб:</span>
-        <input type="range" min="5" max="60" step="5" value="30" class="zoom-slider" id="zoom-slider">
-        <span id="zoom-value">30 мин</span>
-      </div>
-    </div>
-
-    <div class="timeline-container">
-      <div class="timeline">
-        <div class="time-ruler" id="time-ruler">
-          <!-- Часовые метки будут добавляться через JS -->
+            <!-- Блок добавить операцию -->
         </div>
-        <div class="time-slots" id="time-slots"></div>
-      </div>
-    </div>
 
+        <!-- Основная панель -->
+        <div class="main-panel">
+            <div class="timeline-header">
+                <div class="current-date" id="current-date">Понедельник, 1 июня 2023</div>
+                <div class="zoom-controls">
+                    <span>Масштаб:</span>
+                    <input type="range" min="5" max="20" step="5" value="10" class="zoom-slider" id="zoom-slider">
+                    <span id="zoom-value">10 мин</span>
+                </div>
+            </div>
 
+            <!-- Добавляем вкладки для ресурсов -->
+            <div class="resource-tabs" id="resource-tabs">
+                <div th:each="resource : ${resources}"
+                     class="resource-tab"
+                     th:data-resource-id="${resource.id}"
+                     th:text="${resource.viewName}"
+                     th:style="'background: linear-gradient(to right, ' + ${resource.color} + ' 2px, #f5f5f5 2px)'">
 
+                </div>
+            </div>
 
-    <div class="available-operations">
-      <h3>Доступные производственные операции</h3>
-      <div class="operations-list" id="operations-list">
-        <div th:each="op : ${operations}"
-             class="operation-card"
-             th:data-operation-id="${op.id}"
-             th:data-operation-name="${op.name}"
-             th:data-operation-time="${op.time}"
-             draggable="true"
-             th:attr="data-tooltip=|Номер ЗНП: ${op.number}
-              Название: ${op.name}
-              Время: ${#numbers.formatDecimal(op.time, 1, 3)} мин
-              Номенклатура: ${op.nomenclatureName}|">
-          <span th:text="${op.name + ' (' + #numbers.formatDecimal(op.time, 1, 3) + ' мин)'}"></span>
-          <span class="delete-btn" th:data-id="${op.id}">×</span>
+            <!-- Контейнер для таймлайнов ресурсов -->
+            <div class="resource-timelines" id="resource-timelines">
+                <div th:each="resource : ${resources}"
+                     class="resource-timeline"
+                     th:data-resource-id="${resource.id}">
+                    <div class="timeline-container">
+                        <div class="timeline">
+                            <div class="time-ruler"></div>
+                            <div class="time-slots"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Панель операций -->
+            <div class="available-operations">
+                <div class="header-container">
+                    <h3 class="operations-title">Доступные производственные операции</h3>
+                    <div class="search-container">
+                        <input type="text" id="operations-search" placeholder="Поиск операций..." class="search-input">
+                        <button id="clear-search" class="clear-search-btn">×</button>
+                    </div>
+                </div>
+                <div class="operations-list" id="operations-list">
+                    <div th:each="op : ${operations}"
+                         class="operation-card"
+                         th:data-operation-id="${op.id}"
+                         th:data-operation-name="${op.name}"
+                         th:data-operation-time="${op.time}"
+                         th:data-operation-number="${op.number}"
+                         th:data-operation-nomenclature="${op.nomenclatureName}"
+                         th:style="'background: linear-gradient(to right, ' + ${op.color} + ' 5px, #f5f5f5 5px)'"
+                         draggable="true"
+                         th:attr="data-tooltip=${'Номер ЗНП: ' + op.number +
+                             '&#10;Операция: ' + op.name +
+                             '&#10;Время: ' + #numbers.formatDecimal(op.time,1,2) + ' мин' +
+                             '&#10;Номенклатура: ' + op.nomenclatureName}">
+                        <span th:text="${op.name + ' (' + #numbers.formatDecimal(op.time, 1, 2) + ' мин)'}"></span>
+                        <span class="delete-btn" th:data-id="${op.id}">×</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Панель операций -->
+
         </div>
-      </div>
     </div>
 
-
-  </div>
-</div>
-
-<script src="/scripts/TimeLineScript.js"></script>
+    <script src="/scripts/TimeLineScript.js"></script>
 </body>
+<header th:insert="~{parts/footer :: footer}"></header>
 </html>

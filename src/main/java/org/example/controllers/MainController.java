@@ -1,7 +1,9 @@
 package org.example.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.example.entity.Resources;
 import org.example.entity.operationsType.OperationType;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,11 +17,15 @@ import java.util.List;
 public class MainController {
 
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @GetMapping("/")
     public String index(Model model) {
-        List<OperationType> operations = operationsTypeRepo.findAll();
+        List<OperationType> operations = operationsTypeRepo.findByNotInTimeLine();
+        List<Resources> resources = resourcesRepo.findAll();
+
         model.addAttribute("operations", operations);
+        model.addAttribute("resources", resources);
 
         return "index";
     }

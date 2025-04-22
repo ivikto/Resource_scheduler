@@ -7,5 +7,6 @@ public class TurningMachine extends OperationType {
 
     public TurningMachine() {
         this.name = "Токарный";
+        this.color = "#8BC34A";
     }
 }

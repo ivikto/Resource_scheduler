@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.Paint;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class PaintConverter implements OperationConverter<Paint> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public Paint convert(Production production) {
@@ -26,6 +28,7 @@ public class PaintConverter implements OperationConverter<Paint> {
         paint.setRefKey(production.getRefKey());
         paint.setNumber(production.getProductionId());
         paint.setPriority(production.getPriority());
+        paint.setResource(resourcesRepo.findFirstByName("Paint"));
 
         double time = calculateTime(production.getOperations());
         paint.setTime(time);

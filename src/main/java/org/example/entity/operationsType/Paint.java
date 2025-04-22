@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 public class Paint extends OperationType {
 
     public Paint() {
-        this.name = "Малярка";
+        this.name = "Станция окраски";
+        this.color = "#FFC107";
     }
 }

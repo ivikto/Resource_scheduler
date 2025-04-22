@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
 import org.example.entity.operationsType.BandSaw;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +21,8 @@ public class BandSawConverter implements OperationConverter<BandSaw> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
+
 
     @Override
     public BandSaw convert(Production production) {
@@ -26,6 +30,7 @@ public class BandSawConverter implements OperationConverter<BandSaw> {
         bandSaw.setRefKey(production.getRefKey());
         bandSaw.setNumber(production.getProductionId());
         bandSaw.setPriority(production.getPriority());
+        bandSaw.setResource(resourcesRepo.findFirstByName("BandSaw"));
 
         double time = calculateTime(production.getOperations());
         bandSaw.setTime(time);

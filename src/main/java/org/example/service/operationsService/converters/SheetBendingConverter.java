@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.SheetBending;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public SheetBending convert(Production production) {
@@ -26,6 +28,7 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
         sheetBending.setRefKey(production.getRefKey());
         sheetBending.setNumber(production.getProductionId());
         sheetBending.setPriority(production.getPriority());
+        sheetBending.setResource(resourcesRepo.findFirstByName("SheetBending"));
 
         double time = calculateTime(production.getOperations());
         sheetBending.setTime(time);

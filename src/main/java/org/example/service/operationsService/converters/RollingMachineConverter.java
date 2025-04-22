@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.RollingMachine;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class RollingMachineConverter implements OperationConverter<RollingMachin
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public RollingMachine convert(Production production) {
@@ -26,6 +28,7 @@ public class RollingMachineConverter implements OperationConverter<RollingMachin
         rollingMachine.setRefKey(production.getRefKey());
         rollingMachine.setNumber(production.getProductionId());
         rollingMachine.setPriority(production.getPriority());
+        rollingMachine.setResource(resourcesRepo.findFirstByName("RollingMachine"));
 
         double time = calculateTime(production.getOperations());
         rollingMachine.setTime(time);

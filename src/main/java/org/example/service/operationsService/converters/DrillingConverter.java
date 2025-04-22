@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operationsType.Drilling;
+import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
 import org.example.service.operationsService.TypeOfOperations;
@@ -19,6 +20,7 @@ public class DrillingConverter implements OperationConverter<Drilling> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
+    private final ResourcesRepo resourcesRepo;
 
     @Override
     public Drilling convert(Production production) {
@@ -26,6 +28,7 @@ public class DrillingConverter implements OperationConverter<Drilling> {
         drilling.setRefKey(production.getRefKey());
         drilling.setNumber(production.getProductionId());
         drilling.setPriority(production.getPriority());
+        drilling.setResource(resourcesRepo.findFirstByName("Drilling"));
 
         double time = calculateTime(production.getOperations());
         drilling.setTime(time);

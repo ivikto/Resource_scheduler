@@ -7,5 +7,6 @@ public class BandSaw extends OperationType {
 
     public BandSaw() {
         this.name = "Лентопил";
+        this.color = "#4CAF50";
     }
 }

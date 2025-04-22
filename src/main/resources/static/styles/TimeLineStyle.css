@@ -1,5 +1,7 @@
-* {
-    box-sizing: border-box;
+html, body {
+    overflow: hidden; /* Полностью отключаем прокрутку */
+    width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
 }
@@ -15,28 +17,42 @@ body {
     display: grid;
     grid-template-columns: 300px 1fr;
     height: 100vh;
+    overflow: hidden; /* Запрещаем прокрутку контейнера */
 }
 
-/* Стили календаря */
+/* Стили календаря --> */
+/* Основные стили календаря */
 .calendar-panel {
     background: white;
     border-right: 1px solid #ddd;
     padding: 20px;
     overflow-y: auto;
+    font-family: 'IBM Plex Sans', sans-serif;
 }
 
+.calendar-body {
+    background: #262829; /* Изменено на цвет из стиля */
+    border-radius: 16px; /* Добавлен border-radius */
+    padding: 15px; /* Увеличен padding */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Добавлена тень */
+}
+
+/* Заголовок календаря */
 .calendar-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    color: #FFF; /* Белый текст */
 }
 
 .calendar-title {
-    font-size: 1.2rem;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600; /* Полужирный */
+    color: inherit;
 }
 
+/* Кнопки навигации */
 .calendar-nav button {
     background: none;
     border: none;
@@ -44,30 +60,41 @@ body {
     cursor: pointer;
     padding: 5px 10px;
     border-radius: 4px;
+    color: #FFF; /* Белый цвет */
+    transition: all 0.2s ease;
 }
 
 .calendar-nav button:hover {
-    background: #f5f5f5;
+    background: #505050; /* Цвет при наведении из стиля */
+    color: #FFF;
 }
 
+/* Сетка дней недели */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
     margin-bottom: 10px;
+    color: #FFF;
+    border-bottom: 1px solid #404040; /* Граница снизу */
+    padding-bottom: 8px;
 }
 
 .calendar-weekday {
     text-align: center;
-    font-weight: 500;
+    font-weight: 600; /* Полужирный */
     font-size: 0.9rem;
     padding: 5px;
+    color: inherit;
 }
 
+/* Дни календаря */
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
+    font-size: 0.9rem;
+    color: #FFF;
 }
 
 .calendar-day {
@@ -77,21 +104,33 @@ body {
     justify-content: center;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    background: transparent;
+    position: relative;
 }
 
+/* Обычный день */
 .calendar-day:hover {
-    background: #f5f5f5;
+    background: #505050 !important; /* Цвет при наведении */
+    color: #FFF !important;
 }
 
+/* Текущий день */
 .calendar-day.current {
-    background: #4285f4;
-    color: white;
+    background: linear-gradient(to bottom, #03a9f4, #2196f3) !important; /* Градиент */
+    color: #FFF !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Дни из других месяцев */
 .calendar-day.other-month {
-    color: #aaa;
+    color: #484848 !important; /* Серый цвет */
+    opacity: 0.7;
+    pointer-events: none; /* Отключаем клики */
 }
+
+/* <-- Стили календаря  */
 
 /* Основная панель */
 .main-panel {
@@ -103,7 +142,7 @@ body {
 .timeline-header {
     padding: 15px 20px;
     background: white;
-    border-bottom: 1px solid #ddd;
+
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -127,8 +166,8 @@ body {
 /* Стили таймлайна */
 .timeline-container {
     flex: 1;
-    overflow: auto;
-    position: relative;
+    overflow-x: auto; /* Разрешаем ТОЛЬКО горизонтальную прокрутку */
+    overflow-y: hidden; /* Запрещаем вертикальную */
     background: white;
     max-height: 300px;
 }
@@ -136,7 +175,7 @@ body {
 .timeline {
     position: relative;
     height: 100%;
-    min-width: 2880px; /* 24 часа * 120px (для zoomLevel=30) */
+    min-width: 2880px;
 }
 
 .time-ruler {
@@ -150,13 +189,19 @@ body {
     position: absolute;
     height: 100%;
     border-right: 1px solid #aaaaaa;
+    border-top: 1px solid #aaaaaa;
+    border-bottom: 1px solid #aaaaaa;
     box-sizing: border-box;
+    text-align: center;
+
 }
 
 .time-ruler-hour-label {
     position: absolute;
     width: 40px;
     text-align: center;
+    align-content: center;
+    align-items: center;
     font-size: 14px;
     top: 50%;
     transform: translateY(-50%);
@@ -165,10 +210,13 @@ body {
 .time-slots {
     display: flex;
     flex-direction: column;
-    height: 200px; /* или любая другая высота родителя */
-    position: relative;
+    height: 140px;
+    position: static;
     overflow: visible;
     background-color: #fff;
+    z-index: auto;
+    contain: none;
+    transform-style: preserve-3d;
 }
 
 .time-slot {
@@ -195,26 +243,24 @@ body {
     z-index: 1;
 }
 
-
 /* Стили операций */
 .operation {
     position: absolute;
-    height: 60px;
+    height: 130px;
     top: 5px;
     background-color: #4CAF50;
     color: white;
-    padding: 5px;
+    padding: 10px;
     border-radius: 4px;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow: visible;
     cursor: move;
     user-select: none;
     font-size: 12px;
-    -webkit-user-drag: none; /* Отключает перетаскивание для WebKit */
-    user-select: none; /* Запрещает выделение текста */
-    -webkit-tap-highlight-color: transparent; /* Убирает подсветку при касании на мобильных */
-    transition: left 0.2s ease; /* Плавное перемещение */
-    will-change: left; /* Оптимизация анимации */
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: left 0.2s ease;
+    will-change: left;
 }
 
 .delete-operation-btn {
@@ -259,59 +305,36 @@ body {
     transition: opacity 0.3s, transform 0.3s;
 }
 
-/* Стиль для подсказки */
-.operation-tooltip {
-    position: absolute;
-    bottom: calc(100% + 5px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 13px;
-    white-space: pre;
-    z-index: 100;
-    min-width: 250px;
-    text-align: left;
-    line-height: 1.5;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: none;
-}
-
-.operation:hover .operation-tooltip {
-    display: block;
-}
-
 .operation:hover {
     opacity: 0.9;
 }
 
-.operation .drag-handle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 8px;
-    background: rgba(0, 0, 0, 0.2);
-    cursor: e-resize;
-}
-
+.operation .drag-handle,
 .drag-handle {
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
     width: 8px;
-    background: rgba(0,0,0,0.1);
+    background: rgba(0, 0, 0, 0.1);
     cursor: e-resize;
 }
 
 /* Формы */
 .operation-form {
-    padding: 20px;
-    background: white;
+    margin-top: 30px;
+    background: #262829; /* Изменено на цвет из стиля */
+    border-radius: 16px; /* Добавлен border-radius */
+    padding: 15px; /* Увеличен padding */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Добавлена тень */
     border-top: 1px solid #ddd;
+    color: white;
+}
+
+.operation-form h2 {
+    font-size: 18px;
+    font-weight: bolder;
+    text-align: center;
 }
 
 .form-group {
@@ -322,15 +345,42 @@ body {
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
+    font-size: 12px;
 }
 
 .form-control {
-    width: 100%;
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
-    max-width: 200px;
+    box-sizing: border-box; /* Важно для корректного расчета размеров */
+}
+
+.form-control-name {
+    margin-top: 5px;
+    min-width: 230px;
+    max-width: 500px;
+    border-radius: 4px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+}
+
+.form-control-time {
+    border-radius: 4px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    width: 100px; /* Фиксированная ширина для времени */
+}
+
+.form-control-duration {
+    margin-left: 15px;
+    align-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 4px;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    width: 100px; /* Фиксированная ширина для продолжительности */
 }
 
 .btn {
@@ -348,36 +398,52 @@ body {
     background: #3367d6;
 }
 
-.btn-block {
+.btn-btn-block {
     display: block;
     width: 100%;
+    color: white;
+    background: #ffc107;
+    border-radius: 10px;
+    font-weight: bolder;
 }
 
 /* Доступные операции */
 .available-operations {
+    position: relative;
+    z-index: 0; /* Важно: 0 создает новый контекст без изоляции */
     padding: 20px;
     background: white;
     border-top: 1px solid #ddd;
     max-height: 600px;
+    max-width: 1580px;
     overflow-y: auto;
+    transform: translateZ(0); /* Активирует аппаратное ускорение */
 }
 
 .operations-list {
+    padding-top: 10px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    margin-top: 10px;
+
+
 }
 
 .operation-card {
+
+    position: relative;
+    display: inline-block;
     background: #f5f5f5;
     border-radius: 4px;
-    padding: 8px 12px;
+    padding: 8px 15px;
     cursor: grab;
     border: 1px solid #ddd;
-    font-size: 0.9rem;
-    position: relative;
+    font-size: 12px;
+    z-index: 1; /* Базовый уровень для карточки */
+    transform-style: preserve-3d; /* Для 3D-контекста */
+
 }
+
 
 .operation-card:hover {
     background: #e0e0e0;
@@ -421,8 +487,9 @@ body {
 }
 
 .form-row .form-group {
-    flex: 1;
+
     margin-bottom: 0;
+    max-width: 120px;
 }
 
 .toggle-form-btn {
@@ -440,7 +507,7 @@ body {
 
 /* Состояния перетаскивания */
 .drag-over {
-    background-color: white !important;
+    background-color: white;
     outline: 2px dashed #0096ff;
 }
 
@@ -450,29 +517,144 @@ body {
     cursor: grabbing;
 }
 
-/* Стили для всплывающей подсказки */
-.operation::after {
+
+.operation-card::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 5px);
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
     color: white;
-    padding: 5px 10px;
+    padding: 8px 12px;
     border-radius: 4px;
     font-size: 12px;
-    white-space: pre;
+    white-space: pre-wrap;
+    z-index: 999999;
+    pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.3s;
-    z-index: 100;
-    pointer-events: none;
+    transition: opacity 0.3s, visibility 0.3s;
     min-width: 200px;
-    text-align: left;
+    max-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.operation:hover::after {
+.operation-card:hover::after {
     opacity: 1;
     visibility: visible;
 }
+
+/* Специфичные позиции для разных элементов */
+.operation[data-tooltip]::after {
+    bottom: 100%;
+}
+
+/* Заголовок "доступные операции и строка поиска --> */
+.header-container {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Расстояние между заголовком и поиском */
+    margin-bottom: 15px;
+}
+
+.operations-title {
+    margin: 0;
+    font-size: 18px;
+    white-space: nowrap; /* Запрет переноса текста */
+}
+
+.search-container {
+    position: relative;
+    display: inline-block;
+}
+
+.search-input {
+    padding: 8px 30px 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 250px; /* Фиксированная ширина или можно использовать min-width */
+    outline: none; /* Убираем стандартное выделение браузера */
+}
+
+.search-input:focus {
+    border-color: #aaa; /* Серая рамка при фокусе */
+    box-shadow: 0 0 0 1px #aaa; /* Дополнительный эффект (опционально) */
+}
+
+.clear-search-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #999;
+}
+
+.clear-search-btn:hover {
+    color: #666;
+}
+
+/* <-- Заголовок "доступные операции и строка поиска */
+
+/* Стили для вкладок ресурсов */
+.resource-tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 10px;
+}
+
+.resource-tab {
+    padding: 5px 10px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    margin-right: 5px;
+    background: #f5f5f5;
+    border-radius: 5px 5px 0 0;
+    font-size: 12px;
+    min-width: auto;
+}
+
+.resource-tab.active {
+    background: #fff;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+    font-weight: bold;
+}
+
+/* Стили для таймлайнов ресурсов */
+.resource-timelines {
+    position: relative;
+
+}
+
+.resource-timeline {
+    display: none;
+}
+
+.resource-timeline.active {
+    display: block;
+}
+
+/* Глобальный контейнер для подсказок */
+.operation-tooltip {
+    position: fixed;
+    z-index: 999999;
+    pointer-events: none;
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    max-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+
