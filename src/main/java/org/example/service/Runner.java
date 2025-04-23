@@ -42,10 +42,10 @@ public class Runner {
 
     public Map<String, Double> timeForAllOperations() {
         List<OperationType> operations = operationsTypeRepo.findByNotInTimeLine();
-        Map<String, Double> sumMap = operations.stream()
+
+        return operations.stream()
                 .collect(Collectors.groupingBy(OperationType::getName,
                         Collectors.summingDouble(op -> op.getTime() / 60.0) ));
-        return sumMap;
 
     }
 }

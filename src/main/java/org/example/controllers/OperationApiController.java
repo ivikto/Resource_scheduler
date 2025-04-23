@@ -25,9 +25,11 @@ public class OperationApiController {
         return operationsTypeRepo.findByNotInTimeLine();
     }
 
-    @DeleteMapping ("/operations/{id}")
-    public List<OperationType> deleteOperations(@PathVariable(value = "id") int id) {
-        return operationsTypeRepo.findByNotInTimeLine();
+    @DeleteMapping ("/delete/{id}")
+    public void deleteOperations(@PathVariable(value = "id") int id) {
+        OperationType operationForDelete = operationsTypeRepo.findById(id).orElseThrow();
+        operationForDelete.setMarkForDelete(true);
+        operationsTypeRepo.save(operationForDelete);
     }
 
     @GetMapping("/addInTimeLine/{id}")

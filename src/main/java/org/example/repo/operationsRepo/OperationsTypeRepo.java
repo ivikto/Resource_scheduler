@@ -10,7 +10,7 @@ public interface OperationsTypeRepo extends JpaRepository<OperationType, Integer
 
     boolean existsByRefKeyAndNameAndTime(String refKey, String nomenclatureName, double time);
 
-    @Query("SELECT ot FROM OperationType ot WHERE ot.inTimeLine = false ")
+    @Query("SELECT ot FROM OperationType ot WHERE ot.inTimeLine = false AND ot.markForDelete = false")
     List<OperationType> findByNotInTimeLine();
 
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <link rel="stylesheet" href="/styles/TimeLineStyle.css"/>
-<link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/img/favico.ico.png" type="image/x-icon">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <head>
@@ -11,7 +11,10 @@
 
 </head>
 <body>
+<div class="page-wrapper">
+<div class="main">
 <header th:insert="~{parts/header :: header}"></header>
+
 <div class="app-container">
     <!-- Панель календаря -->
     <div class="calendar-panel">
@@ -39,38 +42,32 @@
         <div class="operation-form-wrapper">
             <div class="operation-form">
                 <h2>Добавить операцию</h2>
-
                 <div class="form-group">
                     <label for="new-operation-name">Наименование операции</label>
                     <input type="text" id="new-operation-name" class="form-control form-control-name"
                            placeholder="Введите название" required>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label for="operation-date">Дата</label>
                         <input type="date" id="operation-date" class="form-control form-control-date" required>
                     </div>
-
                     <div class="form-group">
                         <label for="operation-start">Время начала</label>
                         <input type="time" id="operation-start" class="form-control form-control-time" step="300"
                                required>
                     </div>
-
                     <div class="form-group">
                         <label for="new-operation-duration">Продолжительность (мин)</label>
                         <input type="number" id="new-operation-duration" class="form-control form-control-duration"
                                min="5" step="5" value="30" required>
                     </div>
                 </div>
-
                 <button id="add-operation" class="btn-btn-block">Добавить</button>
             </div>
         </div>
         <!-- Блок добавить операцию -->
     </div>
-
     <!-- Основная панель -->
     <div class="main-panel">
         <div class="timeline-header">
@@ -81,7 +78,6 @@
                 <span id="zoom-value">10 мин</span>
             </div>
         </div>
-
         <!-- Добавляем вкладки для ресурсов -->
         <div class="resource-tabs" id="resource-tabs">
             <div th:each="resource : ${resources}"
@@ -89,10 +85,8 @@
                  th:data-resource-id="${resource.id}"
                  th:text="${resource.viewName}"
                  th:style="'background: linear-gradient(to right, ' + ${resource.color} + ' 2px, #f5f5f5 2px)'">
-
             </div>
         </div>
-
         <!-- Контейнер для таймлайнов ресурсов -->
         <div class="resource-timelines" id="resource-timelines">
             <div th:each="resource : ${resources}"
@@ -106,20 +100,20 @@
                 </div>
             </div>
         </div>
-
         <!-- Панель операций -->
         <div class="available-operations">
             <div class="time-info-container">
-                <div class="time-info-tabs" th:each="entry : ${map}"
-                     th:text="${entry.key} + ' : ' + ${#numbers.formatDecimal(entry.value, 1, 2)} + ' ч.'">
+                <div class="time-info-tabs" th:each="entry : ${map}">
+                    <div th:text="${entry.key}"></div>
+                    <div style="font-weight: bold" th:text="${#numbers.formatDecimal(entry.value, 1, 2)} + ' ч.'"></div>
                 </div>
-                <h3 class="operations-title"
+                <h3 class="time-sum-title"
                     th:text="${#numbers.formatDecimal(timeTotalSum, 1, 0)} + ' ч.'">
                     Сумма часов к распределению: 0.00
                 </h3>
             </div>
             <div class="header-container">
-                <h3 class="operations-title">Доступные производственные операции</h3>
+                <h3 class="operations-title">Доступные производственные операции:</h3>
                 <div class="search-container">
                     <input type="text" id="operations-search" placeholder="Поиск операций..." class="search-input">
                     <button id="clear-search" class="clear-search-btn">×</button>
@@ -145,8 +139,9 @@
             </div>
         </div>
         <!-- Панель операций -->
-
     </div>
+</div>
+
 </div>
 
 <script src="/scripts/TimeLineScript.js"></script>
@@ -155,6 +150,11 @@
         <li id="delete-operation">Удалить операцию</li>
     </ul>
 </div>
+
+</div>
+<footer th:insert="~{parts/footer :: footer}"></footer>
+</div>
+
 </body>
-<header th:insert="~{parts/footer :: footer}"></header>
+
 </html>

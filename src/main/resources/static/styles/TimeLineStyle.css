@@ -1,9 +1,9 @@
 html, body {
-    overflow: hidden; /* Полностью отключаем прокрутку */
-    width: 100%;
     height: 100%;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 body {
@@ -14,9 +14,11 @@ body {
 }
 
 .app-container {
+    flex: 1;
+    flex-direction: column;
     display: grid;
     grid-template-columns: 300px 1fr;
-    height: 100vh;
+    min-height: 100vh;
     overflow: hidden; /* Запрещаем прокрутку контейнера */
 }
 
@@ -25,16 +27,19 @@ body {
 .calendar-panel {
     background: white;
     border-right: 1px solid #ddd;
-    padding: 20px;
+    padding: 15px;
     overflow-y: auto;
     font-family: 'IBM Plex Sans', sans-serif;
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-sizing: content-box;!important;
 }
 
 .calendar-body {
     background: #262829; /* Изменено на цвет из стиля */
     border-radius: 16px; /* Добавлен border-radius */
     padding: 15px; /* Увеличен padding */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Добавлена тень */
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3); /* Добавлена тень */
 }
 
 /* Заголовок календаря */
@@ -338,6 +343,7 @@ body {
     width: 100%;
     min-width: 240px;
     max-width: 500px;
+    box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.3); /* Добавлена тень */
 }
 
 .operation-form h2 {
@@ -425,9 +431,11 @@ body {
 .form-control-date {
     min-width: 130px;
 }
+
 .form-control-duration {
     text-align: center;
 }
+
 /* <-- Форма - добавить операцию  */
 
 
@@ -439,9 +447,13 @@ body {
     background: white;
     border-top: 1px solid #ddd;
     max-height: 600px;
-    max-width: 1580px;
+    max-width: 1560px;
     overflow-y: auto;
+    overflow-x: hidden;
     transform: translateZ(0); /* Активирует аппаратное ускорение */
+    border-bottom: 1px solid #ddd;
+    box-sizing: content-box;!important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .operations-list {
@@ -450,7 +462,6 @@ body {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-
 
 
 }
@@ -473,7 +484,7 @@ body {
 .operation-card::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: calc(50% + 10px);
+    bottom: calc(75% + 10px);
     left: 50%;
     transform: translateX(-50%);
     background-color: #333;
@@ -488,7 +499,7 @@ body {
     visibility: hidden;
     transition: opacity 0.3s, visibility 0.3s;
     min-width: 200px;
-    max-width: 300px;
+    max-width: 400px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -568,9 +579,6 @@ body {
     transform: scale(0.95);
     cursor: grabbing;
 }
-
-
-
 
 
 /* Заголовок "доступные операции и строка поиска --> */
@@ -669,7 +677,7 @@ body {
     padding: 8px 12px;
     border-radius: 4px;
     font-size: 12px;
-    max-width: 300px;
+    max-width: 400px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     opacity: 0;
     transition: opacity 0.3s;
@@ -684,7 +692,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -697,7 +705,7 @@ body {
     border-radius: 16px; /* Как у calendar-body */
     width: 450px;
     max-width: 90%;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     color: #FFF; /* Белый текст как в календаре */
     border: 1px solid #404040; /* Граница как у calendar-grid */
 }
@@ -761,7 +769,7 @@ body {
 
 .split-dialog button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .split-dialog button#confirm-split {
@@ -781,13 +789,20 @@ body {
 
 /* Анимация появления */
 @keyframes dialogFadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .split-dialog .dialog-content {
     animation: dialogFadeIn 0.3s ease-out;
 }
+
 /* <-- Диалоговое окно разделения операции */
 
 /* Стиль для ручных операций --> */
@@ -835,6 +850,7 @@ body {
 .context-menu li:hover {
     background: #505050;
 }
+
 /* <-- Меню удаления с таймлайна */
 
 .time-info-tabs {
@@ -848,6 +864,11 @@ body {
     padding: 5px;
 }
 
+.time-info-tabs:hover {
+    box-shadow: 0 4px 12px rgb(67, 171, 80);
+
+}
+
 .time-info-container {
     justify-content: center;
     text-align: center;
@@ -857,8 +878,7 @@ body {
     flex-wrap: wrap;
 }
 
-.operations-title {
-
+.time-sum-title {
     text-align: center;
     align-content: center;
     align-items: center;
@@ -869,3 +889,53 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     padding: 5px;
 }
+
+.operations-title {
+    text-align: center;
+    align-content: center;
+    align-items: center;
+    margin: 0;
+    font-size: 18px;
+    white-space: nowrap; /* Запрет переноса текста */
+    padding: 5px;
+}
+
+/* Для основного контейнера */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Стили для футера */
+
+.page-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-dark {
+
+    background-color: #262829;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.footer-dark .nav-link {
+    color: #f8f9fa !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.footer-dark .nav-link:hover {
+    color: #0d6efd !important; /* Bootstrap-синий при наведении */
+}
+
+.footer-dark p {
+    color: #dee2e6;
+    margin-bottom: 0;
+}
+
+
+

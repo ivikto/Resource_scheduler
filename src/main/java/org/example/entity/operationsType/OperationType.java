@@ -32,4 +32,5 @@ public class OperationType {
     @JsonIgnore
     private Resources resource;
     private boolean isEdited = false;
+    private boolean markForDelete = false;
 }

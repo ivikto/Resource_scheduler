@@ -291,7 +291,7 @@ function renderScheduledOperations(timelineContainer, cellWidth) {
         operationEl.dataset.resourceId = currentResourceId;
 
         // Форматирование данных для подсказки
-        const formattedDuration = formatDuration(durationMinutes);
+        const formattedDuration = parseFloat(formatDuration(durationMinutes)).toFixed(2);
         const startTime = `${opStart.getHours().toString().padStart(2, '0')}:${opStart.getMinutes().toString().padStart(2, '0')}`;
 
         operationEl.dataset.tooltip = `
@@ -316,7 +316,7 @@ function renderScheduledOperations(timelineContainer, cellWidth) {
 
         const opText = document.createElement('span');
         opText.className = 'operation-text';
-        opText.textContent = `${op.name || 'Без названия'} (${formattedDuration})`;
+        opText.textContent = `${op.name || 'Без названия'} (${formattedDuration}) ч.`;
 
         // Добавляем элементы в операцию
         operationEl.append(opText);
@@ -585,7 +585,6 @@ function setupZoomControls() {
 
 
 function setupSearch() {
-    console.log('Search')
     const searchInput = document.getElementById('operations-search');
     const clearSearchBtn = document.getElementById('clear-search');
     const operationCards = document.querySelectorAll('.operation-card');
@@ -876,9 +875,10 @@ function renderAvailableOperations(operations) {
 }
 
 async function deleteOperationFromList(operationId) {
+    console.log('delete')
     if (confirm('Вы действительно хотите удалить эту операцию?')) {
         try {
-            const response = await fetch(`/api/operations/${operationId}`, {
+            const response = await fetch(`/api/delete/${operationId}`, {
                 method: 'DELETE'
             });
 
