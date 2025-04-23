@@ -581,12 +581,6 @@ body {
     margin-bottom: 15px;
 }
 
-.operations-title {
-    margin: 0;
-    font-size: 18px;
-    white-space: nowrap; /* Запрет переноса текста */
-}
-
 .search-container {
     position: relative;
     display: inline-block;
@@ -842,3 +836,36 @@ body {
     background: #505050;
 }
 /* <-- Меню удаления с таймлайна */
+
+.time-info-tabs {
+    align-items: center;
+    align-content: center;
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 80px;
+    max-width: 115px;
+    font-size: 12px;
+    padding: 5px;
+}
+
+.time-info-container {
+    justify-content: center;
+    text-align: center;
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.operations-title {
+
+    text-align: center;
+    align-content: center;
+    align-items: center;
+    margin: 0;
+    font-size: 18px;
+    white-space: nowrap; /* Запрет переноса текста */
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    padding: 5px;
+}

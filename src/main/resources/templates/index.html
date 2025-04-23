@@ -109,20 +109,21 @@
 
         <!-- Панель операций -->
         <div class="available-operations">
+            <div class="time-info-container">
+                <div class="time-info-tabs" th:each="entry : ${map}"
+                     th:text="${entry.key} + ' : ' + ${#numbers.formatDecimal(entry.value, 1, 2)} + ' ч.'">
+                </div>
+                <h3 class="operations-title"
+                    th:text="${#numbers.formatDecimal(timeTotalSum, 1, 0)} + ' ч.'">
+                    Сумма часов к распределению: 0.00
+                </h3>
+            </div>
             <div class="header-container">
                 <h3 class="operations-title">Доступные производственные операции</h3>
                 <div class="search-container">
                     <input type="text" id="operations-search" placeholder="Поиск операций..." class="search-input">
                     <button id="clear-search" class="clear-search-btn">×</button>
                 </div>
-                <li class="time-info-tabs" th:each="entry : ${map}">
-                    <span th:text = "${entry.key}"></span>
-                    <span th:text="${#numbers.formatDecimal(entry.value, 1, 2)}"></span>
-                </li>
-                <h3 class="operations-title"
-                    th:text="'Всего: ' + ${#numbers.formatDecimal(timeTotalSum, 1, 0)} + ' ч.'">
-                    Сумма часов к распределению: 0.00
-                </h3>
             </div>
             <div class="operations-list" id="operations-list">
                 <div th:each="op : ${operations}"
