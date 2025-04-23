@@ -2,12 +2,18 @@ package org.example.entity.operationsType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.example.entity.Resources;
 
+@Builder
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class OperationType {
 
     @Id
@@ -25,4 +31,5 @@ public class OperationType {
     @JoinColumn(name = "resource_id")
     @JsonIgnore
     private Resources resource;
+    private boolean isEdited = false;
 }

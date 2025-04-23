@@ -117,7 +117,7 @@ body {
 
 /* Текущий день */
 .calendar-day.current {
-    background: linear-gradient(to bottom, #03a9f4, #2196f3) !important; /* Градиент */
+    background: linear-gradient(to bottom, rgba(255, 165, 0, 0.85), rgba(255, 165, 0, 0.95)) !important; /* Градиент */
     color: #FFF !important;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -320,92 +320,116 @@ body {
     cursor: e-resize;
 }
 
-/* Формы */
+/* Форма - добавить операцию --> */
+/* Центрирующий контейнер */
+.operation-form-wrapper {
+    padding-top: 25px;
+    display: flex;
+    box-sizing: border-box;
+}
+
+/* Форма */
 .operation-form {
-    margin-top: 30px;
-    background: #262829; /* Изменено на цвет из стиля */
-    border-radius: 16px; /* Добавлен border-radius */
-    padding: 15px; /* Увеличен padding */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Добавлена тень */
-    border-top: 1px solid #ddd;
+    background: #262829;
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     color: white;
+    width: 100%;
+    min-width: 240px;
+    max-width: 500px;
 }
 
 .operation-form h2 {
     font-size: 18px;
     font-weight: bolder;
     text-align: center;
+    margin-bottom: 25px;
+    color: #fff;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    justify-content: center;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    text-align: center;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-weight: 500;
-    font-size: 12px;
+    font-size: 14px;
+    color: #eee;
 }
 
 .form-control {
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-    box-sizing: border-box; /* Важно для корректного расчета размеров */
-}
-
-.form-control-name {
-    margin-top: 5px;
-    min-width: 230px;
-    max-width: 500px;
-    border-radius: 4px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-}
-
-.form-control-time {
-    border-radius: 4px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    width: 100px; /* Фиксированная ширина для времени */
-}
-
-.form-control-duration {
-    margin-left: 15px;
-    align-content: center;
-    align-items: center;
-    text-align: center;
-    border-radius: 4px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    width: 100px; /* Фиксированная ширина для продолжительности */
-}
-
-.btn {
-    padding: 8px 16px;
-    background: #4285f4;
+    padding: 12px 15px;
+    border: 1px solid #505050;
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+    display: block;
+    background: #333;
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.2s;
 }
 
-.btn:hover {
-    background: #3367d6;
-}
-
+/* Кнопка */
 .btn-btn-block {
     display: block;
     width: 100%;
-    color: white;
+    max-width: 300px;
+    padding: 14px;
+    margin: 25px auto 0;
+    color: #333;
     background: #ffc107;
-    border-radius: 10px;
-    font-weight: bolder;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
 }
+
+.btn-btn-block:hover {
+    background: #ffca28;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 600px) {
+    .operation-form {
+        padding: 20px 15px;
+    }
+
+    .form-control {
+        max-width: 100%;
+    }
+
+    .btn-btn-block {
+        max-width: 100%;
+    }
+}
+
+.form-control-date {
+    min-width: 130px;
+}
+.form-control-duration {
+    text-align: center;
+}
+/* <-- Форма - добавить операцию  */
+
 
 /* Доступные операции */
 .available-operations {
@@ -422,15 +446,16 @@ body {
 
 .operations-list {
     padding-top: 10px;
+    padding-bottom: 40px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 
 
+
 }
 
 .operation-card {
-
     position: relative;
     display: inline-block;
     background: #f5f5f5;
@@ -439,11 +464,38 @@ body {
     cursor: grab;
     border: 1px solid #ddd;
     font-size: 12px;
-    z-index: 1; /* Базовый уровень для карточки */
+    z-index: 0; /* Базовый уровень для карточки */
     transform-style: preserve-3d; /* Для 3D-контекста */
-
+    box-shadow: 0 2px 3px rgb(122, 121, 121);
+    isolation: isolate; /* Создаем новый контекст стекинга */
 }
 
+.operation-card::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(50% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: pre-wrap;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    min-width: 200px;
+    max-width: 300px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.operation-card:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
 
 .operation-card:hover {
     background: #e0e0e0;
@@ -518,37 +570,8 @@ body {
 }
 
 
-.operation-card::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 5px);
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: pre-wrap;
-    z-index: 999999;
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s, visibility 0.3s;
-    min-width: 200px;
-    max-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
 
-.operation-card:hover::after {
-    opacity: 1;
-    visibility: visible;
-}
 
-/* Специфичные позиции для разных элементов */
-.operation[data-tooltip]::after {
-    bottom: 100%;
-}
 
 /* Заголовок "доступные операции и строка поиска --> */
 .header-container {
@@ -625,6 +648,7 @@ body {
     border-bottom: 1px solid #fff;
     margin-bottom: -1px;
     font-weight: bold;
+    box-shadow: 0 -2px 6px rgb(122, 121, 121);
 }
 
 /* Стили для таймлайнов ресурсов */
@@ -655,6 +679,166 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     opacity: 0;
     transition: opacity 0.3s;
+    white-space: pre-line;
 }
 
+/* Диалоговое окно разделения операции */
+/* Диалоговое окно разделения операции */
+.split-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+}
 
+.split-dialog .dialog-content {
+    background: #262829; /* Как у calendar-body */
+    padding: 20px;
+    border-radius: 16px; /* Как у calendar-body */
+    width: 450px;
+    max-width: 90%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    color: #FFF; /* Белый текст как в календаре */
+    border: 1px solid #404040; /* Граница как у calendar-grid */
+}
+
+.split-dialog h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600; /* Как calendar-title */
+    text-align: center;
+    color: inherit;
+}
+
+.split-dialog .split-controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.split-dialog .split-controls label {
+    font-weight: 500;
+}
+
+.split-dialog input[type="number"] {
+    background: #333;
+    border: 1px solid #505050;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    width: 80px;
+}
+
+.split-dialog .duration-input-group {
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.split-dialog .duration-input-group label {
+    min-width: 70px;
+}
+
+.split-dialog .dialog-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.split-dialog button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.split-dialog button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.split-dialog button#confirm-split {
+    background: linear-gradient(to bottom, #4CAF50, #45a049);
+    color: white;
+}
+
+.split-dialog button#cancel-split {
+    background: linear-gradient(to bottom, #f44336, #d32f2f);
+    color: white;
+}
+
+.split-dialog button#split-equal {
+    background: linear-gradient(to bottom, #2196F3, #1976D2);
+    color: white;
+}
+
+/* Анимация появления */
+@keyframes dialogFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.split-dialog .dialog-content {
+    animation: dialogFadeIn 0.3s ease-out;
+}
+/* <-- Диалоговое окно разделения операции */
+
+/* Стиль для ручных операций --> */
+.operation.manual {
+    background-color: rgba(255, 165, 0, 0.58) !important; /* Оранжевый */
+    border-left: 3px solid #cc8400; /* Темно-оранжевая граница */
+
+}
+
+/* Для градиентного стиля (если используете gradient) */
+.operation-card[data-operation-id^="manual"] {
+    background: linear-gradient(to right, #FFA500 5px, #f5f5f5 5px) !important;
+}
+
+/* <-- Стиль для ручных операций */
+.operations-title {
+    text-align: right;
+
+}
+
+/* Меню удаления с таймлайна --> */
+.context-menu {
+    position: absolute;
+    z-index: 10000;
+    background: #333;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    display: none;
+    min-width: 150px;
+}
+
+.context-menu ul {
+    list-style: none;
+    padding: 5px 0;
+    margin: 0;
+}
+
+.context-menu li {
+    padding: 8px 15px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.context-menu li:hover {
+    background: #505050;
+}
+/* <-- Меню удаления с таймлайна */
