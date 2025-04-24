@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.GrindingMachine;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,34 +22,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GrindingMachineConverter implements OperationConverter<GrindingMachine> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
 
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public GrindingMachine convert(Production production) {
-        GrindingMachine grindingMachine = new GrindingMachine();
-        grindingMachine.setRefKey(production.getRefKey());
-        grindingMachine.setNumber(production.getProductionId());
-        grindingMachine.setPriority(production.getPriority());
-        grindingMachine.setResource(resourcesRepo.findFirstByName("GrindingMachine"));
-
-        double time = calculateTime(production.getOperations());
-        grindingMachine.setTime(time);
-        grindingMachine.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                grindingMachine.getRefKey(),
-                grindingMachine.getName(),
-                grindingMachine.getTime())) {
-            log.warn("Duplicate oreration: " + grindingMachine.getNomenclatureName());
-        } else {
-            if (grindingMachine.getTime() != 0) {
-                operationsTypeRepo.save(grindingMachine);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+        GrindingMachine grindingMachine = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), GrindingMachine::new);
+
+        operationSaver.saveOperation(grindingMachine);
+
         return grindingMachine;
     }
 
@@ -55,13 +52,6 @@ public class GrindingMachineConverter implements OperationConverter<GrindingMach
                "EMPTY"
 
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override

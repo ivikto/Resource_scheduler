@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -31,19 +32,28 @@ public class Loader {
     public Loader(ResourcesRepo resourcesRepo, OperationsService operationsService) {
         this.resourcesRepo = resourcesRepo;
         this.operationsService = operationsService;
-        this.executorService = Executors.newFixedThreadPool(15);
+        this.executorService = Executors.newFixedThreadPool(1);
 
     }
 
-    public void operationsLoad() {
+    public void operationsLoad() throws InterruptedException {
         List<Class<?>> subClassList = SpringClassUtils.findSubclasses(OperationType.class, "org.example.entity");
+        CountDownLatch latch = new CountDownLatch(subClassList.size());
+
         subClassList.forEach(subClass -> {
             executorService.execute(() -> {
-                log.info("Processing class: {}", subClass.getSimpleName());
-                operationsService.getAllOperations(subClass);
+                try {
+                    log.info("Processing class: {}", subClass.getSimpleName());
+                    operationsService.getAllOperations(subClass);
+                } catch (Exception e) {
+                    log.error("Error processing {}: {}", subClass.getSimpleName(), e.getMessage(), e);
+                } finally {
+                    latch.countDown(); // Уменьшаем счётчик в любом случае
+                }
             });
         });
-        log.info("Operations loaded {}", new Date());
+
+        latch.await(); // Ждём завершения всех задач
     }
 
     @PreDestroy

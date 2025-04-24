@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.Montage;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -18,34 +23,24 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MontageConverter implements OperationConverter<Montage> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
+
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public Montage convert(Production production) {
-        Montage montage = new Montage();
-        montage.setRefKey(production.getRefKey());
-        montage.setNumber(production.getProductionId());
-        montage.setPriority(production.getPriority());
-        montage.setResource(resourcesRepo.findFirstByName("Montage"));
-
-        double time = calculateTime(production.getOperations());
-        montage.setTime(time);
-
-        montage.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                montage.getRefKey(),
-                montage.getName(),
-                montage.getTime())) {
-            log.warn("Duplicate oreration: " + montage.getNomenclatureName());
-        } else {
-            if (montage.getTime() != 0) {
-                operationsTypeRepo.save(montage);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+        Montage montage = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), Montage::new);
+
         return montage;
     }
 
@@ -56,13 +51,6 @@ public class MontageConverter implements OperationConverter<Montage> {
                 TypeOfOperations.MONTAGE_COMPLEX_ASSEMBLY.getNomenclature(),
                 TypeOfOperations.MONTAGE_ASSEMBLY_WORKER_HOURS.getNomenclature()
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override

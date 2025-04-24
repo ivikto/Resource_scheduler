@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.Welding;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -18,34 +23,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WeldingConverter implements OperationConverter<Welding> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
+
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public Welding convert(Production production) {
-        Welding welding = new Welding();
-        welding.setRefKey(production.getRefKey());
-        welding.setNumber(production.getProductionId());
-        welding.setPriority(production.getPriority());
-        welding.setResource(resourcesRepo.findFirstByName("Welding"));
-
-        double time = calculateTime(production.getOperations());
-        welding.setTime(time);
-
-        welding.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                welding.getRefKey(),
-                welding.getName(),
-                welding.getTime())) {
-            log.warn("Duplicate operation: {}", welding.getNomenclatureName());
-        } else {
-            if (welding.getTime() != 0) {
-                operationsTypeRepo.save(welding);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+        Welding welding = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), Welding::new);
+
+        operationSaver.saveOperation(welding);
+
         return welding;
     }
 
@@ -57,13 +54,6 @@ public class WeldingConverter implements OperationConverter<Welding> {
                 TypeOfOperations.WELDING_LASER.getNomenclature(),
                 TypeOfOperations.WELDING_WORKER_HOURS.getNomenclature()
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override

@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.Drilling;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -18,33 +23,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DrillingConverter implements OperationConverter<Drilling> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
+
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public Drilling convert(Production production) {
-        Drilling drilling = new Drilling();
-        drilling.setRefKey(production.getRefKey());
-        drilling.setNumber(production.getProductionId());
-        drilling.setPriority(production.getPriority());
-        drilling.setResource(resourcesRepo.findFirstByName("Drilling"));
-
-        double time = calculateTime(production.getOperations());
-        drilling.setTime(time);
-        drilling.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                drilling.getRefKey(),
-                drilling.getName(),
-                drilling.getTime())) {
-            log.warn("Duplicate oreration: " + drilling.getNomenclatureName());
-        } else {
-            if (drilling.getTime() != 0) {
-                operationsTypeRepo.save(drilling);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+
+        Drilling drilling = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), Drilling::new);
+
+        operationSaver.saveOperation(drilling);
+
+
         return drilling;
     }
 
@@ -53,13 +53,6 @@ public class DrillingConverter implements OperationConverter<Drilling> {
         return List.of(
                 TypeOfOperations.DRILLING.getNomenclature()
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override

@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.PipeMachine;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -18,34 +23,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PipeMachineConverter implements OperationConverter<PipeMachine> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
+
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public PipeMachine convert(Production production) {
-        PipeMachine pipeMachine = new PipeMachine();
-        pipeMachine.setRefKey(production.getRefKey());
-        pipeMachine.setNumber(production.getProductionId());
-        pipeMachine.setPriority(production.getPriority());
-        pipeMachine.setResource(resourcesRepo.findFirstByName("PipeMachine"));
-
-        double time = calculateTime(production.getOperations());
-        pipeMachine.setTime(time);
-
-        pipeMachine.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                pipeMachine.getRefKey(),
-                pipeMachine.getName(),
-                pipeMachine.getTime())) {
-            log.warn("Duplicate oreration: " + pipeMachine.getNomenclatureName());
-        } else {
-            if (pipeMachine.getTime() != 0) {
-                operationsTypeRepo.save(pipeMachine);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+        PipeMachine pipeMachine = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), PipeMachine::new);
+
+        operationSaver.saveOperation(pipeMachine);
+
         return pipeMachine;
     }
 
@@ -55,13 +52,6 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
                 TypeOfOperations.PIPE_BENDING.getNomenclature(),
                 TypeOfOperations.PIPE_CNC_BENDING.getNomenclature()
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override

@@ -45,7 +45,6 @@ public class Request {
     public void doRequest() {
         //Получаем ссылку для запроса
         String url = odataUrl.getUrl();
-        System.out.println(url);
         //Выполняем запрос
         String response = request(url);
         List<Production> productionList = jsonParse.parse(response);

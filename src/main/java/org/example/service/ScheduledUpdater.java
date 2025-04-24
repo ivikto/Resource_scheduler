@@ -18,12 +18,16 @@ public class ScheduledUpdater {
     private final Loader loader;
 
 
-    @Scheduled(fixedRate = 5 * 60 * 1000)
+    @Scheduled(fixedRate = 10 * 60 * 1000)
     public void updateProductions() {
         try {
+            long startTime = System.currentTimeMillis();
             request.doRequest();
+            log.info("Updated productions at {}", new Date());
             loader.operationsLoad();
-            log.info("Updating database at: {} ", new Date());
+            log.info("Updating operations at: {} ", new Date());
+            long endTime = System.currentTimeMillis();
+            log.info("Updated data at: {} sek", (endTime - startTime) / 1000);
         } catch (Exception e) {
             log.error("Update database filed {}", e.getMessage(), e);
         }

@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.RollingMachine;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -18,34 +23,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RollingMachineConverter implements OperationConverter<RollingMachine> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
+
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public RollingMachine convert(Production production) {
-        RollingMachine rollingMachine = new RollingMachine();
-        rollingMachine.setRefKey(production.getRefKey());
-        rollingMachine.setNumber(production.getProductionId());
-        rollingMachine.setPriority(production.getPriority());
-        rollingMachine.setResource(resourcesRepo.findFirstByName("RollingMachine"));
-
-        double time = calculateTime(production.getOperations());
-        rollingMachine.setTime(time);
-
-        rollingMachine.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                rollingMachine.getRefKey(),
-                rollingMachine.getName(),
-                rollingMachine.getTime())) {
-            log.warn("Duplicate oreration: " + rollingMachine.getNomenclatureName());
-        } else {
-            if (rollingMachine.getTime() != 0) {
-                operationsTypeRepo.save(rollingMachine);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+        RollingMachine rollingMachine = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), RollingMachine::new);
+
+        operationSaver.saveOperation(rollingMachine);
+
         return rollingMachine;
     }
 
@@ -55,13 +52,6 @@ public class RollingMachineConverter implements OperationConverter<RollingMachin
                 TypeOfOperations.ROLLING.getNomenclature(),
                 TypeOfOperations.ROLLING_PR.getNomenclature()
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override

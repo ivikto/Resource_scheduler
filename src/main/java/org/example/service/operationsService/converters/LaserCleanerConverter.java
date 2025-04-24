@@ -1,13 +1,18 @@
 package org.example.service.operationsService.converters;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.entity.Resources;
+import org.example.entity.operationsType.BandSaw;
 import org.example.entity.operationsType.LaserCleaner;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
+import org.example.service.operationsService.OperationBuilder;
+import org.example.service.operationsService.OperationSaver;
 import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -18,33 +23,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
 
-    private final Request request;
-    private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
+    private final OperationSaver operationSaver;
+    private final OperationBuilder operationBuilder;
+    private Resources resource;
+
+    @PostConstruct
+    public void init() {
+        this.resource = resourcesRepo.findFirstByName("BandSaw")
+                .orElseThrow(() -> new IllegalStateException("BandSaw resource not found"));
+    }
 
     @Override
     public LaserCleaner convert(Production production) {
-        LaserCleaner laserCleaner = new LaserCleaner();
-        laserCleaner.setRefKey(production.getRefKey());
-        laserCleaner.setNumber(production.getProductionId());
-        laserCleaner.setPriority(production.getPriority());
-        laserCleaner.setResource(resourcesRepo.findFirstByName("LaserCleaner"));
-
-        double time = calculateTime(production.getOperations());
-        laserCleaner.setTime(time);
-        laserCleaner.setNomenclatureName(production.getManufacturedProductName());
-
-
-        if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                laserCleaner.getRefKey(),
-                laserCleaner.getName(),
-                laserCleaner.getTime())) {
-            log.warn("Duplicate oreration: " + laserCleaner.getNomenclatureName());
-        } else {
-            if (laserCleaner.getTime() != 0) {
-                operationsTypeRepo.save(laserCleaner);
-            }
+        if (production == null) {
+            throw new IllegalArgumentException("Production cannot be null");
         }
+        LaserCleaner laserCleaner = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), LaserCleaner::new);
+
+        operationSaver.saveOperation(laserCleaner);
+
         return laserCleaner;
     }
 
@@ -54,13 +52,6 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
                 TypeOfOperations.LASER_CLEANING_PR.getNomenclature(),
                 TypeOfOperations.LASER_CLEANING.getNomenclature()
         );
-    }
-
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
     }
 
     @Override
