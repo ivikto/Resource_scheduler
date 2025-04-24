@@ -1,15 +1,22 @@
 package org.example.service.operationsService.loaders;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Resources;
 import org.example.entity.operationsType.*;
 import org.example.repo.ResourcesRepo;
 import org.example.service.operationsService.OperationsService;
+import org.example.utils.SpringClassUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -18,7 +25,39 @@ public class Loader {
 
     private final ResourcesRepo resourcesRepo;
     private final OperationsService operationsService;
+    private final ExecutorService executorService;
 
+    @Autowired
+    public Loader(ResourcesRepo resourcesRepo, OperationsService operationsService) {
+        this.resourcesRepo = resourcesRepo;
+        this.operationsService = operationsService;
+        this.executorService = Executors.newFixedThreadPool(15);
+
+    }
+
+    public void operationsLoad() {
+        List<Class<?>> subClassList = SpringClassUtils.findSubclasses(OperationType.class, "org.example.entity");
+        subClassList.forEach(subClass -> {
+            executorService.execute(() -> {
+                log.info("Processing class: {}", subClass.getSimpleName());
+                operationsService.getAllOperations(subClass);
+            });
+        });
+        log.info("Operations loaded {}", new Date());
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
 
     public void resourceLoad() {
         List<Resources> resources = new ArrayList<>();
@@ -166,23 +205,5 @@ public class Loader {
         System.out.println(resources);
 
         resourcesRepo.saveAll(resources);
-    }
-
-    public void operationsLoad() {
-        List<BandSaw> bandSawsOperations = operationsService.getAllOperations(BandSaw.class);
-        List<LaserCleaner> laserCleanerOperations = operationsService.getAllOperations(LaserCleaner.class);
-        List<LaserCutter> laserCutterOperations = operationsService.getAllOperations(LaserCutter.class);
-        List<MillingMachine> millingMachineOperations = operationsService.getAllOperations(MillingMachine.class);
-        List<Montage> montageOperations = operationsService.getAllOperations(Montage.class);
-        List<Paint> paintOperations = operationsService.getAllOperations(Paint.class);
-        List<PipeMachine> pipeMachineOperations = operationsService.getAllOperations(PipeMachine.class);
-        List<Printer> printerOperations = operationsService.getAllOperations(Printer.class);
-        List<RollingMachine> rollingMachinesOperations = operationsService.getAllOperations(RollingMachine.class);
-        List<SheetBending> sheetBendingOperations = operationsService.getAllOperations(SheetBending.class);
-        List<TurningMachine> turningMachineOperations = operationsService.getAllOperations(TurningMachine.class);
-        List<Welding> weldingOperations = operationsService.getAllOperations(Welding.class);
-        List<Drilling> drillingOperations = operationsService.getAllOperations(Drilling.class);
-
-        System.out.println(bandSawsOperations.size() + laserCleanerOperations.size() + laserCutterOperations.size() + millingMachineOperations.size() + montageOperations.size() + paintOperations.size() + pipeMachineOperations.size() + printerOperations.size() + rollingMachinesOperations.size() + sheetBendingOperations.size() + turningMachineOperations.size() + weldingOperations.size() + drillingOperations.size());
     }
 }

@@ -30,7 +30,7 @@ body {
     padding: 15px;
     overflow-y: auto;
     font-family: 'IBM Plex Sans', sans-serif;
-    border-bottom: 1px solid #ddd;
+
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     box-sizing: content-box;!important;
 }
@@ -122,7 +122,7 @@ body {
 
 /* Текущий день */
 .calendar-day.current {
-    background: linear-gradient(to bottom, rgba(255, 165, 0, 0.85), rgba(255, 165, 0, 0.95)) !important; /* Градиент */
+    background: #ffc107;
     color: #FFF !important;
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -350,7 +350,6 @@ body {
     font-size: 18px;
     font-weight: bolder;
     text-align: center;
-    margin-bottom: 25px;
     color: #fff;
 }
 
@@ -451,7 +450,7 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
     transform: translateZ(0); /* Активирует аппаратное ускорение */
-    border-bottom: 1px solid #ddd;
+
     box-sizing: content-box;!important;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -631,6 +630,7 @@ body {
     display: flex;
     border-bottom: 1px solid #ddd;
     margin-bottom: 10px;
+
 }
 
 .resource-tab {
@@ -857,7 +857,7 @@ body {
     align-items: center;
     align-content: center;
     border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     min-width: 80px;
     max-width: 115px;
     font-size: 12px;
@@ -865,7 +865,7 @@ body {
 }
 
 .time-info-tabs:hover {
-    box-shadow: 0 4px 12px rgb(67, 171, 80);
+    box-shadow: 0 2px 12px rgb(76, 175, 80);
 
 }
 
@@ -888,6 +888,14 @@ body {
     border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     padding: 5px;
+}
+
+.operations-sum {
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    padding: 5px;
+    font-weight: bolder;
+    font-size: 18px;
 }
 
 .operations-title {
@@ -937,5 +945,44 @@ body {
     margin-bottom: 0;
 }
 
+/* Header styles --> */
+/* Основные стили для header */
+.header-header-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.header-flex-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* Логотип прижат к самому левому краю */
+.header-logo-container {
+    margin-right: auto;
+    margin-left: -280px; /* Выступает за пределы контейнера */
+
+}
+
+/* Навигация */
+.header-nav {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0 auto; /* Сдвигаем навигацию вправо */
+    gap: 1rem;
+}
+
+/* Кнопки прижаты к правому краю */
+.header-buttons {
+    margin-left: 2rem; /* Добавляем отступ от навигации */
+    display: flex;
+    gap: 0.5rem;
+}
+/* <-- Header styles */
 
 

@@ -41,18 +41,16 @@ public class OdataUrl {
     // Ссылка на все Заказы на производство в статусе "В работе", Изготовитель "Цех, Пометка на удаление "false"
     private String makeProdUrl() {
         String filterValue = "СостояниеЗаказа_Key";
-        String filterValue2 = "СтруктурнаяЕдиницаОпераций_Key";
+        //String filterValue2 = "СтруктурнаяЕдиницаОпераций_Key";
 
         String filter = "?$filter=";
         String filterByValue = URLEncoder.encode(filterValue, StandardCharsets.UTF_8);
-        String filterByValue2 = URLEncoder.encode(filterValue2, StandardCharsets.UTF_8);
+        //String filterByValue2 = URLEncoder.encode(filterValue2, StandardCharsets.UTF_8);
         String type = URLEncoder.encode(DOC_TYPE, StandardCharsets.UTF_8);
         String guid = " eq guid'";
         String delMark = "DeletionMark eq false";
 
         String url = baseUrl + type + filter + filterByValue + guid + statusRefKey +
-                "' and "
-                + filterByValue2 + guid + manufacturerRefKey +
                 "' and "
                 + delMark
                 + "&$format=json";

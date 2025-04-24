@@ -12,8 +12,9 @@
 </head>
 <body>
 <div class="page-wrapper">
+    <header th:insert="~{parts/header :: header}"></header>
 <div class="main">
-<header th:insert="~{parts/header :: header}"></header>
+
 
 <div class="app-container">
     <!-- Панель календаря -->
@@ -113,7 +114,10 @@
                 </h3>
             </div>
             <div class="header-container">
-                <h3 class="operations-title">Доступные производственные операции:</h3>
+                <div class="operations-sum">
+                <h3 class="operations-title" th:text="'Доступные производственные операции: ' + ${operationsCount}"></h3>
+                </div>
+
                 <div class="search-container">
                     <input type="text" id="operations-search" placeholder="Поиск операций..." class="search-input">
                     <button id="clear-search" class="clear-search-btn">×</button>

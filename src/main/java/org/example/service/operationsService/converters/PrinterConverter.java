@@ -32,9 +32,9 @@ public class PrinterConverter implements OperationConverter<Printer> {
 
         double time = calculateTime(production.getOperations());
         printer.setTime(time);
-        String name = getNumName(production);
-        printer.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+
+        printer.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 printer.getRefKey(),
@@ -69,11 +69,4 @@ public class PrinterConverter implements OperationConverter<Printer> {
         return Printer.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 }

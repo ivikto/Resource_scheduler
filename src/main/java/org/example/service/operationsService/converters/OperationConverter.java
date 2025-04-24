@@ -10,5 +10,4 @@ public interface OperationConverter<T> {
     T convert(Production production);
     List<String> getSupportedNomenclatures();
     Class<T> getType();
-    String getNumName(Production production);
 }

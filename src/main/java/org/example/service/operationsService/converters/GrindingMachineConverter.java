@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Operation;
 import org.example.entity.Production;
-import org.example.entity.operationsType.Drilling;
+import org.example.entity.operationsType.GrindingMachine;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Request;
-import org.example.service.operationsService.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,42 +15,45 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DrillingConverter implements OperationConverter<Drilling> {
+public class GrindingMachineConverter implements OperationConverter<GrindingMachine> {
 
     private final Request request;
     private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
 
+
     @Override
-    public Drilling convert(Production production) {
-        Drilling drilling = new Drilling();
-        drilling.setRefKey(production.getRefKey());
-        drilling.setNumber(production.getProductionId());
-        drilling.setPriority(production.getPriority());
-        drilling.setResource(resourcesRepo.findFirstByName("Drilling"));
+    public GrindingMachine convert(Production production) {
+        GrindingMachine grindingMachine = new GrindingMachine();
+        grindingMachine.setRefKey(production.getRefKey());
+        grindingMachine.setNumber(production.getProductionId());
+        grindingMachine.setPriority(production.getPriority());
+        grindingMachine.setResource(resourcesRepo.findFirstByName("GrindingMachine"));
 
         double time = calculateTime(production.getOperations());
-        drilling.setTime(time);
-        drilling.setNomenclatureName(production.getManufacturedProductName());
+        grindingMachine.setTime(time);
+        grindingMachine.setNomenclatureName(production.getManufacturedProductName());
 
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
-                drilling.getRefKey(),
-                drilling.getName(),
-                drilling.getTime())) {
-            log.warn("Duplicate oreration: " + drilling.getNomenclatureName());
+                grindingMachine.getRefKey(),
+                grindingMachine.getName(),
+                grindingMachine.getTime())) {
+            log.warn("Duplicate oreration: " + grindingMachine.getNomenclatureName());
         } else {
-            if (drilling.getTime() != 0) {
-                operationsTypeRepo.save(drilling);
+            if (grindingMachine.getTime() != 0) {
+                operationsTypeRepo.save(grindingMachine);
             }
         }
-        return drilling;
+        return grindingMachine;
     }
 
     @Override
     public List<String> getSupportedNomenclatures() {
         return List.of(
-                TypeOfOperations.DRILLING.getNomenclature()
+                "EMPTY",
+               "EMPTY"
+
         );
     }
 
@@ -63,9 +65,8 @@ public class DrillingConverter implements OperationConverter<Drilling> {
     }
 
     @Override
-    public Class<Drilling> getType() {
-        return Drilling.class;
+    public Class<GrindingMachine> getType() {
+        return GrindingMachine.class;
     }
-
 
 }

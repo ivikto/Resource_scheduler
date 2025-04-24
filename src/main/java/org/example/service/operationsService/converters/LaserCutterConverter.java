@@ -32,9 +32,9 @@ public class LaserCutterConverter implements OperationConverter<LaserCutter> {
 
         double time = calculateTime(production.getOperations());
         laserCutter.setTime(time);
-        String name = getNumName(production);
-        laserCutter.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+
+        laserCutter.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 laserCutter.getRefKey(),
@@ -72,11 +72,4 @@ public class LaserCutterConverter implements OperationConverter<LaserCutter> {
         return LaserCutter.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 }

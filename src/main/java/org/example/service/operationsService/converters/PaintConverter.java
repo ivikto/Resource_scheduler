@@ -32,9 +32,8 @@ public class PaintConverter implements OperationConverter<Paint> {
 
         double time = calculateTime(production.getOperations());
         paint.setTime(time);
-        String name = getNumName(production);
-        paint.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+        paint.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 paint.getRefKey(),
@@ -70,11 +69,4 @@ public class PaintConverter implements OperationConverter<Paint> {
         return Paint.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 }

@@ -32,9 +32,8 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
 
         double time = calculateTime(production.getOperations());
         laserCleaner.setTime(time);
-        String name = getNumName(production);
-        laserCleaner.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+        laserCleaner.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 laserCleaner.getRefKey(),
@@ -68,14 +67,5 @@ public class LaserCleanerConverter implements OperationConverter<LaserCleaner> {
     public Class<LaserCleaner> getType() {
         return LaserCleaner.class;
     }
-
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
-
 
 }

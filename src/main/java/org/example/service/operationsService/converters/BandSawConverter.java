@@ -34,9 +34,7 @@ public class BandSawConverter implements OperationConverter<BandSaw> {
 
         double time = calculateTime(production.getOperations());
         bandSaw.setTime(time);
-        String name = getNumName(production);
-        bandSaw.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+        bandSaw.setNomenclatureName(production.getManufacturedProductName());
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 bandSaw.getRefKey(),
@@ -72,13 +70,6 @@ public class BandSawConverter implements OperationConverter<BandSaw> {
         return BandSaw.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 
 
 }

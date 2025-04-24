@@ -32,9 +32,9 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
 
         double time = calculateTime(production.getOperations());
         pipeMachine.setTime(time);
-        String name = getNumName(production);
-        pipeMachine.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+
+        pipeMachine.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 pipeMachine.getRefKey(),
@@ -69,11 +69,4 @@ public class PipeMachineConverter implements OperationConverter<PipeMachine> {
         return PipeMachine.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 }

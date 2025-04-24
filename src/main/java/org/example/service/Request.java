@@ -2,6 +2,8 @@ package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.config.AuthConfig;
+import org.example.entity.Production;
+import org.example.repo.ProductionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.example.service.JsonParse.set;
 
@@ -25,22 +28,30 @@ public class Request {
     private final AuthConfig auth;
     private final JsonParse jsonParse;
     private final OdataUrl odataUrl;
+    private final ProductionRepo productionRepo;
 
 
     private int responseCode;
 
 
     @Autowired
-    public Request(AuthConfig auth, JsonParse jsonParse, OdataUrl odataUrl) {
+    public Request(AuthConfig auth, JsonParse jsonParse, OdataUrl odataUrl, ProductionRepo productionRepo) {
         this.auth = auth;
         this.jsonParse = jsonParse;
         this.odataUrl = odataUrl;
+        this.productionRepo = productionRepo;
     }
 
     public void doRequest() {
+        //Получаем ссылку для запроса
         String url = odataUrl.getUrl();
+        System.out.println(url);
+        //Выполняем запрос
         String response = request(url);
-        jsonParse.parse(response);
+        List<Production> productionList = jsonParse.parse(response);
+        productionList.forEach(production -> {
+            getNameOfNomenclature(production);
+        });
         //nomenclatureLoad();
         //getNameOfNomenclature();
 
@@ -56,11 +67,12 @@ public class Request {
         }
     }
 
-    public String getNameOfNomenclature(String refKey) {
-        String url = odataUrl.makeNumUrl(refKey);
+    public void getNameOfNomenclature(Production production) {
+        String url = odataUrl.makeNumUrl(production.getManufacturedProductRefKey());
         String name = jsonParse.parseNum(request(url));
+        production.setManufacturedProductName(name);
+        productionRepo.save(production);
 
-        return name;
     }
 
 

@@ -39,6 +39,7 @@ public class MainController {
         model.addAttribute("resources", resources);
         model.addAttribute("timeTotalSum", timeTotalSum / 60);
         model.addAttribute("map", mapWithTimeOfOperations);
+        model.addAttribute("operationsCount", operations.size());
 
 
         return "index";

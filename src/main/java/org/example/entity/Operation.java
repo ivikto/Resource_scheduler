@@ -29,6 +29,7 @@ public class Operation {
     @JoinColumn(name = "production_ref_key")
     @JsonBackReference
     Production production;
+    private boolean isFinish = false;
 
 
 

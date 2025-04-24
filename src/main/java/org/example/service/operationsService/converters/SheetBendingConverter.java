@@ -32,9 +32,9 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
 
         double time = calculateTime(production.getOperations());
         sheetBending.setTime(time);
-        String name = getNumName(production);
-        sheetBending.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+
+        sheetBending.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 sheetBending.getRefKey(),
@@ -69,11 +69,4 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
         return SheetBending.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 }

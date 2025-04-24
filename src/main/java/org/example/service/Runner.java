@@ -19,15 +19,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class Runner {
     private final Request request;
+    private final ScheduledUpdater updater;
     private final OperationsService operationsService;
     private final Loader loader;
     private final OperationsTypeRepo operationsTypeRepo;
 
 
     public void run() {
+        //updater.updateProductions();
+
+        //loader.operationsLoad();
         //loader.resourceLoad();
-        //request.doRequest();
-        //operationsLoad();
+
         log.info("Data Loaded");
 
     }

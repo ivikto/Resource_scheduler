@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ResourcesRepo extends JpaRepository<Resources, Integer> {
 
-    Resources findFirstByName(String name);
+    public Resources findFirstByName(String name);
 }

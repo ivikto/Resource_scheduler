@@ -24,6 +24,7 @@ function initApp() {
     setupZoomControls();
     setupOperationForm();
     updateAvailableOperations()
+    timlineScrollWidth()
 
 
     // Создаем контейнер для подсказок
@@ -1117,6 +1118,64 @@ async function deleteOperationFromTimeline(operationId, operationElement) {
 }
 
 // <-- Меню удаления с таймлайна
+// Скролл полосы таймлайна -->
+function timlineScrollWidth() {
+    console.log('Starting timeline scroll adjustment');
 
+    const MAX_ATTEMPTS = 10;
+    let attempts = 0;
+
+    const scrollToCenter = () => {
+        const timelineContainer = document.querySelector('.timeline-container');
+
+        if (!timelineContainer) {
+            console.error('Timeline container not found');
+            return false;
+        }
+
+        // Проверяем, есть ли что прокручивать
+        if (timelineContainer.scrollWidth <= timelineContainer.clientWidth) {
+            console.log('No scroll needed - content fits container');
+            return true;
+        }
+
+        const centerPosition = (timelineContainer.scrollWidth / 2 - timelineContainer.clientWidth / 2) + 175;
+
+        console.log(`Attempt ${attempts + 1}:`, {
+            scrollWidth: timelineContainer.scrollWidth,
+            clientWidth: timelineContainer.clientWidth,
+            calculatedPosition: centerPosition
+        });
+
+        if (centerPosition > 0 && !isNaN(centerPosition)) {
+            timelineContainer.scrollLeft = centerPosition;
+            console.log('Successfully scrolled to center');
+            return true;
+        }
+
+        return false;
+    };
+
+    // Пробуем сразу
+    if (scrollToCenter()) return;
+
+    // Если не получилось, пробуем с интервалом
+    const retryInterval = setInterval(() => {
+        attempts++;
+
+        if (scrollToCenter() || attempts >= MAX_ATTEMPTS) {
+            clearInterval(retryInterval);
+            if (attempts >= MAX_ATTEMPTS) {
+                console.error('Failed to scroll after maximum attempts');
+            }
+        }
+    }, 300); // Увеличили интервал между попытками
+}
+
+// Вызываем при загрузке и после рендеринга таймлайна
+document.addEventListener('DOMContentLoaded', timlineScrollWidth);
+window.addEventListener('load', timlineScrollWidth);
+
+// <-- Скролл полосы таймлайна
 // Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', initApp);

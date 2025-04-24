@@ -32,9 +32,8 @@ public class MillingMachineConverter implements OperationConverter<MillingMachin
 
         double time = calculateTime(production.getOperations());
         millingMachine.setTime(time);
-        String name = getNumName(production);
-        millingMachine.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+        millingMachine.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 millingMachine.getRefKey(),
@@ -68,14 +67,5 @@ public class MillingMachineConverter implements OperationConverter<MillingMachin
     public Class<MillingMachine> getType() {
         return MillingMachine.class;
     }
-
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
-
 
 }

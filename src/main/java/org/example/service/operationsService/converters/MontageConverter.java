@@ -32,9 +32,9 @@ public class MontageConverter implements OperationConverter<Montage> {
 
         double time = calculateTime(production.getOperations());
         montage.setTime(time);
-        String name = getNumName(production);
-        montage.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+
+        montage.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 montage.getRefKey(),
@@ -69,14 +69,5 @@ public class MontageConverter implements OperationConverter<Montage> {
     public Class<Montage> getType() {
         return Montage.class;
     }
-
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
-
 
 }

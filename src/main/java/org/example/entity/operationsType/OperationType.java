@@ -33,4 +33,5 @@ public class OperationType {
     private Resources resource;
     private boolean isEdited = false;
     private boolean markForDelete = false;
+    private boolean isFinish = false;
 }

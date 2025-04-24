@@ -32,9 +32,9 @@ public class RollingMachineConverter implements OperationConverter<RollingMachin
 
         double time = calculateTime(production.getOperations());
         rollingMachine.setTime(time);
-        String name = getNumName(production);
-        rollingMachine.setNomenclatureName(name);
-        production.setManufacturedProductName(name);
+
+        rollingMachine.setNomenclatureName(production.getManufacturedProductName());
+
 
         if (operationsTypeRepo.existsByRefKeyAndNameAndTime(
                 rollingMachine.getRefKey(),
@@ -69,11 +69,4 @@ public class RollingMachineConverter implements OperationConverter<RollingMachin
         return RollingMachine.class;
     }
 
-    @Override
-    public String getNumName(Production production) {
-        String name = null;
-        name = request.getNameOfNomenclature(production.getManufacturedProductRefKey());
-
-        return name;
-    }
 }

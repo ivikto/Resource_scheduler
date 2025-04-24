@@ -36,8 +36,7 @@ public class Production {
     private List<Operation> operations; //Операции
     private String manufacturedProductRefKey;
     private String manufacturedProductName;
-
-    boolean finish = false;
+    private boolean finish = false;
 
 
 }
