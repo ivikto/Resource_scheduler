@@ -546,18 +546,15 @@ async function saveOperationsToBackend() {
 }
 
 async function loadOperationsFromBackend(resourceId = null) {
-    console.log('Starting load operations...'); // 1
     const url = resourceId
         ? `api/load-operations?resourceId=${encodeURIComponent(resourceId)}`
         : 'api/load-operations';
 
     try {
-        console.log('Fetching from:', url); // 2
         const response = await fetch(url);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const operations = await response.json();
-        console.log('Raw response:', operations); // 3
 
         if (!operations?.length) {
             console.warn('No operations received');
@@ -565,7 +562,7 @@ async function loadOperationsFromBackend(resourceId = null) {
         }
 
         const latest = operations[operations.length - 1];
-        console.log('Latest operation data:', latest); // 4
+        //console.log('Latest operation data:', latest); // 4
 
         const parsedData = {
             operations: JSON.parse(latest.operations),
@@ -992,28 +989,43 @@ export function initContextMenu() {
 
         e.preventDefault();
 
-        // Преобразуем ID в число и проверяем
-        const opId = parseInt(operationElement.dataset.operationId);
-        if (isNaN(opId)) {
-            console.error('Invalid operation ID:', operationElement.dataset.operationId);
+        // Получаем ID операции и проверяем его
+        const opId = operationElement.dataset.operationId;
+
+        console.log(operationElement.dataset)
+        console.log(operationElement.dataset.operationId)
+
+        // Проверяем, что ID существует и валиден
+        if (!opId || opId === "undefined") {
+            console.error('Invalid operation ID:', opId);
+            alert('Неверный ID операции');
             return;
         }
 
+        // Сохраняем выбранные данные
         selectedOperationId = opId;
         selectedOperationElement = operationElement;
 
+        // Позиционируем меню
         contextMenu.style.display = 'block';
         contextMenu.style.left = `${e.pageX}px`;
         contextMenu.style.top = `${e.pageY}px`;
     });
 
+    // Обработчик удаления
     deleteOption.addEventListener('click', function() {
-        if (selectedOperationId && confirm('Вы уверены, что хотите удалить эту операцию?')) {
+        if (!selectedOperationId) {
+            alert('Операция не выбрана');
+            return;
+        }
+
+        if (confirm('Вы уверены, что хотите удалить эту операцию?')) {
             deleteOperationFromTimeline(selectedOperationId, selectedOperationElement);
         }
         hideContextMenu();
     });
 
+    // Скрытие меню
     document.addEventListener('click', function(e) {
         if (e.button !== 2 && !contextMenu.contains(e.target)) {
             hideContextMenu();
@@ -1029,25 +1041,32 @@ function hideContextMenu() {
 }
 
 async function deleteOperationFromTimeline(operationId, operationElement) {
-    // Дополнительная проверка
-    if (!operationId || isNaN(operationId)) {
+    // Проверяем ID операции
+    if (!operationId || operationId === "undefined") {
         alert('Неверный ID операции');
         return;
     }
 
     try {
+        // Анимация удаления
         operationElement.style.transition = 'opacity 0.3s, transform 0.3s';
         operationElement.style.opacity = '0';
         operationElement.style.transform = 'scale(0.9)';
 
+        // Отправка запроса на сервер
         const response = await fetch(`/api/deleteFromTimeLine/${operationId}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ resourceId: currentResourceId })
+            body: JSON.stringify({
+                resourceId: currentResourceId
+            })
         });
 
-        if (!response.ok) throw new Error(await response.text());
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
 
+        // Удаление элемента после анимации
         setTimeout(() => {
             operationElement.remove();
             updateAvailableOperations();
@@ -1055,9 +1074,12 @@ async function deleteOperationFromTimeline(operationId, operationElement) {
 
     } catch (error) {
         console.error('Ошибка удаления:', error);
+
+        // Восстанавливаем элемент при ошибке
         operationElement.style.opacity = '1';
         operationElement.style.transform = 'scale(1)';
-        alert(error.message || 'Ошибка при удалении');
+
+        alert(error.message || 'Не удалось удалить операцию');
     }
 }
 
