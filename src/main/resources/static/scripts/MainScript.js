@@ -1,29 +1,37 @@
-// TimeLineScript.js
-let currentDate = new Date();
+import {initMonthNavigation, renderCalendar, updateDateDisplay} from './CalendarScript.js';
+
+// MainScript.js
+export let currentDate = new Date();
 currentDate.setHours(0, 0, 0, 0);
 let zoomLevel = 10; // минут на ячейку
-const MIN_ZOOM = 5; // минимальный размер ячейки (5 минут)
-const MAX_ZOOM = 20; // максимальный размер ячейки (20 минут)
 let scheduledOperations = {}; // Объект для хранения операций по ресурсам
-let currentResourceId = null; // ID текущего выбранного ресурса
+export let currentResourceId = null; // ID текущего выбранного ресурса
 // Глобальные переменные для хранения выбранной операции
 let selectedOperationId = null;
 let selectedOperationElement = null;
 
 // Инициализация приложения
-function initApp() {
+async function initApp() {
     const today = new Date();
     currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    loadOperationsFromStorage();
+    //loadOperationsFromStorage();
+    const loadedData = await loadOperationsFromBackend();
+    if (loadedData) {
+        scheduledOperations = loadedData.operations;
+        console.log('Loaded operations:', scheduledOperations); // Проверка данных
+    }
     renderCalendar();
     updateDateDisplay();
-    initResourceTabs();
     initMonthNavigation();
+
+    initResourceTabs();
+
     initDragOperations();
     initContextMenu();
     setupZoomControls();
     setupOperationForm();
-    updateAvailableOperations()
+
+    await updateAvailableOperations()
     timlineScrollWidth()
 
 
@@ -31,122 +39,28 @@ function initApp() {
     const tooltipContainer = document.createElement('div');
     tooltipContainer.className = 'operation-tooltip';
     document.body.appendChild(tooltipContainer);
-    const tooltipContainer2 = document.createElement('div');
-    tooltipContainer.className = 'operation-tooltip';
-    document.body.appendChild(tooltipContainer);
-
-    // Настройка обработчиков для подсказок
-    //setupTooltips();
 
     // Отрисовка таймлайна сразу после инициализации
     renderTimeline();
 }
 
-/* Календарь */
-function initMonthNavigation() {
-    document.getElementById('next-month').addEventListener('click', handleNextMonth);
-    document.getElementById('prev-month').addEventListener('click', handlePrevMonth);
-}
-
-function handleNextMonth() {
-    changeMonth(1);
-}
-
-function handlePrevMonth() {
-    changeMonth(-1);
-}
-
-function changeMonth(offset) {
-    currentDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + offset,
-        1
-    );
-    renderCalendar();
-}
-
-function renderCalendar() {
-    const calendarDays = document.getElementById('calendar-days');
-    calendarDays.innerHTML = '';
-
-    const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-    document.getElementById('calendar-month-year').textContent =
-        `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-    const daysInMonth = lastDay.getDate();
-
-    let firstDayOfWeek = firstDay.getDay();
-    if (firstDayOfWeek === 0) firstDayOfWeek = 7;
-
-    // Добавляем дни предыдущего месяца
-    for (let i = 1; i < firstDayOfWeek; i++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        calendarDays.appendChild(dayElement);
-    }
-
-    // Добавляем дни текущего месяца
-    const today = new Date();
-    for (let i = 1; i <= daysInMonth; i++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = i;
-
-        // Правильная проверка текущего дня
-        if (i === today.getDate() &&
-            currentDate.getMonth() === today.getMonth() &&
-            currentDate.getFullYear() === today.getFullYear()) {
-            dayElement.classList.add('current');
-        }
-
-        dayElement.addEventListener('click', () => selectDate(i));
-        calendarDays.appendChild(dayElement);
-    }
-
-    // Добавляем дни следующего месяца
-    const totalCells = Math.ceil((firstDayOfWeek - 1 + daysInMonth) / 7) * 7;
-    const remainingCells = totalCells - (firstDayOfWeek - 1 + daysInMonth);
-
-    for (let i = 1; i <= remainingCells; i++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        calendarDays.appendChild(dayElement);
-    }
-}
-
-function selectDate(day) {
-    currentDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        day
-    );
-    updateDateDisplay();
-    renderTimeline();
-}
-
-function updateDateDisplay() {
-    const daysOfWeek = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
-    const monthNames = ["января", "февраля", "марта", "апреля", "мая", "июня",
-        "июля", "августа", "сентября", "октября", "ноября", "декабря"];
-
-    // Форматируем дату для отображения
-    const formattedDate = `${daysOfWeek[currentDate.getDay()]}, ${currentDate.getDate()} ${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-    document.getElementById('current-date').textContent = formattedDate;
-}
-
 /* Таймлайн */
-function initResourceTabs() {
+export function initResourceTabs() {
     const tabs = document.querySelectorAll('.resource-tab');
     const timelines = document.querySelectorAll('.resource-timeline');
 
     if (tabs.length === 0) return;
 
-    // Если нет сохраненного ресурса, выбираем первый
-    if (!currentResourceId && tabs.length > 0) {
+    // Получаем сохраненный resourceId из localStorage
+    const savedResourceId = localStorage.getItem('currentResourceId');
+
+    // Устанавливаем текущий ресурс (из сохраненного или первый)
+    if (savedResourceId && Array.from(tabs).some(tab => tab.getAttribute('data-resource-id') === savedResourceId)) {
+        currentResourceId = savedResourceId;
+    } else if (tabs.length > 0) {
         currentResourceId = tabs[0].getAttribute('data-resource-id');
+        // Сохраняем первый ресурс по умолчанию
+        localStorage.setItem('currentResourceId', currentResourceId);
     }
 
     // Активируем соответствующую вкладку и таймлайн
@@ -163,19 +77,9 @@ function initResourceTabs() {
         }
     });
 
-    // Если не нашли активный ресурс, выбираем первый
-    if (!foundActive && tabs.length > 0) {
-        currentResourceId = tabs[0].getAttribute('data-resource-id');
-        tabs[0].classList.add('active');
-        const firstTimeline = document.querySelector(`.resource-timeline[data-resource-id="${currentResourceId}"]`);
-        if (firstTimeline) {
-            firstTimeline.classList.add('active');
-        }
-    }
-
     // Обработчики кликов по вкладкам
     tabs.forEach(tab => {
-        tab.addEventListener('click', function () {
+        tab.addEventListener('click', function() {
             const resourceId = this.getAttribute('data-resource-id');
             if (resourceId === currentResourceId) return;
 
@@ -186,13 +90,15 @@ function initResourceTabs() {
             document.querySelector(`.resource-timeline[data-resource-id="${resourceId}"]`).classList.add('active');
 
             currentResourceId = resourceId;
-            saveOperationsToStorage();
+            // Сохраняем выбранный ресурс
+            localStorage.setItem('currentResourceId', currentResourceId);
+
             renderTimeline();
         });
     });
 }
 
-function renderTimeline() {
+export function renderTimeline() {
     const activeTimeline = document.querySelector('.resource-timeline.active');
     if (!activeTimeline) {
         const firstTimeline = document.querySelector('.resource-timeline');
@@ -214,7 +120,7 @@ function renderTimeline() {
     renderScheduledOperations(activeTimeline, cellWidth);
 }
 
-function renderTimeRuler(timelineContainer, cellWidth) {
+export function renderTimeRuler(timelineContainer, cellWidth) {
     const timeRuler = timelineContainer.querySelector('.time-ruler');
     if (!timeRuler) return;
 
@@ -239,8 +145,7 @@ function renderTimeRuler(timelineContainer, cellWidth) {
         timeRuler.appendChild(hourElement);
     }
 }
-
-function renderTimeSlots(timelineContainer, cellWidth) {
+export function renderTimeSlots(timelineContainer, cellWidth) {
     const timeSlots = timelineContainer.querySelector('.time-slots');
     if (!timeSlots) return;
 
@@ -258,7 +163,7 @@ function renderTimeSlots(timelineContainer, cellWidth) {
 }
 
 
-function renderScheduledOperations(timelineContainer, cellWidth) {
+export function renderScheduledOperations(timelineContainer, cellWidth) {
     const timeSlots = timelineContainer.querySelector('.time-slots');
     if (!timeSlots) return;
 
@@ -349,13 +254,16 @@ function renderScheduledOperations(timelineContainer, cellWidth) {
     });
 }
 
-function formatDuration(minutes) {
+export function formatDuration(minutes) {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours > 0 ? hours + 'ч ' : ''}${mins > 0 ? mins + 'м' : ''}`.trim();
 }
 
-function initDragOperations() {
+/* Таймлайн */
+
+
+export function initDragOperations() {
     // Обработчики для карточек операций
     document.querySelectorAll('.operation-card').forEach(card => {
         card.addEventListener('dragstart', function (e) {
@@ -460,7 +368,8 @@ function makeDraggable(element, index, cellWidth) {
                 const newStart = new Date(op.start);
                 newStart.setHours(Math.floor(startMinutes / 60), startMinutes % 60);
                 op.start = newStart.toISOString();
-                saveOperationsToStorage();
+                //saveOperationsToStorage();
+                saveOperationsToBackend();
             }
 
             element.style.zIndex = '';
@@ -513,7 +422,8 @@ async function scheduleOperation(operationData, startMinutes) {
         }
 
         scheduledOperations[currentResourceId].push(newOperation);
-        saveOperationsToStorage();
+        //saveOperationsToStorage();
+        await saveOperationsToBackend();
         renderTimeline();
 
         await addInTimeLine(operationData.id);
@@ -566,7 +476,7 @@ async function delFromTimeLine(id) {
 
 }
 
-function setupZoomControls() {
+export function setupZoomControls() {
     const zoomSlider = document.getElementById('zoom-slider');
     const zoomValue = document.getElementById('zoom-value');
 
@@ -615,39 +525,63 @@ function setupSearch() {
     });
 }
 
-function saveOperationsToStorage() {
-    localStorage.setItem('scheduledOperations', JSON.stringify(scheduledOperations));
-    localStorage.setItem('currentDate', currentDate.toISOString());
-    localStorage.setItem('currentResourceId', currentResourceId);
+/* Сохранение и загрузка операций таймлайна в бд --> */
+async function saveOperationsToBackend() {
+    const data = {
+        resourceId: currentResourceId,
+        operations: JSON.stringify(scheduledOperations)
+    };
+
+    try {
+        const response = await fetch('api/save-operations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Save failed:', error);
+        return { error: error.message };
+    }
 }
 
-function loadOperationsFromStorage() {
-    const savedOperations = localStorage.getItem('scheduledOperations');
-    const savedDate = localStorage.getItem('currentDate');
-    const savedResourceId = localStorage.getItem('currentResourceId');
+async function loadOperationsFromBackend(resourceId = null) {
+    console.log('Starting load operations...'); // 1
+    const url = resourceId
+        ? `api/load-operations?resourceId=${encodeURIComponent(resourceId)}`
+        : 'api/load-operations';
 
-    if (savedOperations) {
-        try {
-            scheduledOperations = JSON.parse(savedOperations);
+    try {
+        console.log('Fetching from:', url); // 2
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-            // Гарантируем, что все значения являются массивами
-            for (const resourceId in scheduledOperations) {
-                if (!Array.isArray(scheduledOperations[resourceId])) {
-                    scheduledOperations[resourceId] = [];
-                }
-            }
-        } catch (e) {
-            console.error('Ошибка парсинга сохраненных операций:', e);
-            scheduledOperations = {};
+        const operations = await response.json();
+        console.log('Raw response:', operations); // 3
+
+        if (!operations?.length) {
+            console.warn('No operations received');
+            return null;
         }
-    } else {
-        scheduledOperations = {};
-    }
 
-    if (savedResourceId) {
-        currentResourceId = savedResourceId;
+        const latest = operations[operations.length - 1];
+        console.log('Latest operation data:', latest); // 4
+
+        const parsedData = {
+            operations: JSON.parse(latest.operations),
+            date: latest.operationDate ? new Date(latest.operationDate) : null,
+            resourceId: latest.resourceId
+        };
+
+        console.log('Parsed data:', parsedData); // 5
+        return parsedData;
+    } catch (error) {
+        console.error('Load failed:', error);
+        return null;
     }
 }
+
+/* <-- Сохранение операций таймлайна в бд */
 
 async function deleteOperation(index, id) {
     if (index === undefined || index === null || isNaN(index)) {
@@ -672,7 +606,8 @@ async function deleteOperation(index, id) {
         if (scheduledOperations[currentResourceId] && scheduledOperations[currentResourceId][index]) {
             deletedOperation = scheduledOperations[currentResourceId][index];
             scheduledOperations[currentResourceId].splice(index, 1);
-            saveOperationsToStorage();
+            //saveOperationsToStorage();
+            await saveOperationsToBackend();
         }
 
         await delFromTimeLine(id);
@@ -691,7 +626,8 @@ async function deleteOperation(index, id) {
 
         if (deletedOperation && scheduledOperations[currentResourceId]) {
             scheduledOperations[currentResourceId].splice(index, 0, deletedOperation);
-            saveOperationsToStorage();
+            //saveOperationsToStorage();
+            await saveOperationsToBackend();
         }
 
         if (operationEl) {
@@ -705,7 +641,7 @@ async function deleteOperation(index, id) {
 
 //Форма ручного добавления операции -->
 // Настройка формы добавления операции
-function setupOperationForm() {
+export function setupOperationForm() {
     // Устанавливаем текущую дату по умолчанию
     const dateInput = document.getElementById('operation-date');
     dateInput.valueAsDate = new Date();
@@ -768,7 +704,7 @@ function addManualOperationToTimeline() {
     document.getElementById('operation-start').value = '';
 }
 
-function scheduleManualOperation(operationData, startDate) {
+async function scheduleManualOperation(operationData, startDate) {
     const durationMinutes = operationData.durationMinutes;
     const endDate = new Date(startDate.getTime() + durationMinutes * 60000);
 
@@ -784,7 +720,8 @@ function scheduleManualOperation(operationData, startDate) {
     }
     scheduledOperations[currentResourceId].push(newOperation);
 
-    saveOperationsToStorage();
+    //saveOperationsToStorage();
+    await saveOperationsToBackend();
     renderTimeline();
 }
 
@@ -1044,38 +981,39 @@ document.addEventListener('DOMContentLoaded', initOperationSplitting);
 //<-- Разделение карточек
 
 // Меню удаления с таймлайна -->
-
 // Инициализация контекстного меню
-function initContextMenu() {
+export function initContextMenu() {
     const contextMenu = document.getElementById('context-menu');
     const deleteOption = document.getElementById('delete-operation');
 
-    // Показываем контекстное меню по правому клику
     document.addEventListener('contextmenu', function(e) {
         const operationElement = e.target.closest('.operation');
         if (!operationElement) return;
 
         e.preventDefault();
 
-        // Сохраняем выбранную операцию
-        selectedOperationId = operationElement.dataset.operationId;
+        // Преобразуем ID в число и проверяем
+        const opId = parseInt(operationElement.dataset.operationId);
+        if (isNaN(opId)) {
+            console.error('Invalid operation ID:', operationElement.dataset.operationId);
+            return;
+        }
+
+        selectedOperationId = opId;
         selectedOperationElement = operationElement;
 
-        // Позиционируем меню
         contextMenu.style.display = 'block';
         contextMenu.style.left = `${e.pageX}px`;
         contextMenu.style.top = `${e.pageY}px`;
     });
 
-    // Обработка выбора "Удалить"
     deleteOption.addEventListener('click', function() {
-        if (confirm('Вы уверены, что хотите удалить эту операцию?')) {
+        if (selectedOperationId && confirm('Вы уверены, что хотите удалить эту операцию?')) {
             deleteOperationFromTimeline(selectedOperationId, selectedOperationElement);
         }
         hideContextMenu();
     });
 
-    // Скрываем меню при клике вне его
     document.addEventListener('click', function(e) {
         if (e.button !== 2 && !contextMenu.contains(e.target)) {
             hideContextMenu();
@@ -1091,36 +1029,43 @@ function hideContextMenu() {
 }
 
 async function deleteOperationFromTimeline(operationId, operationElement) {
+    // Дополнительная проверка
+    if (!operationId || isNaN(operationId)) {
+        alert('Неверный ID операции');
+        return;
+    }
+
     try {
-        // Показываем анимацию удаления
         operationElement.style.transition = 'opacity 0.3s, transform 0.3s';
         operationElement.style.opacity = '0';
         operationElement.style.transform = 'scale(0.9)';
 
-        // Удаляем элемент после анимации
+        const response = await fetch(`/api/deleteFromTimeLine/${operationId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ resourceId: currentResourceId })
+        });
+
+        if (!response.ok) throw new Error(await response.text());
+
         setTimeout(() => {
-            if (operationElement.parentNode) {
-                operationElement.parentNode.removeChild(operationElement);
-            }
-            // Обновляем данные
+            operationElement.remove();
             updateAvailableOperations();
         }, 300);
 
     } catch (error) {
         console.error('Ошибка удаления:', error);
-        alert('Не удалось удалить операцию');
-        // Восстанавливаем элемент при ошибке
-        if (operationElement) {
-            operationElement.style.opacity = '1';
-            operationElement.style.transform = 'scale(1)';
-        }
+        operationElement.style.opacity = '1';
+        operationElement.style.transform = 'scale(1)';
+        alert(error.message || 'Ошибка при удалении');
     }
 }
 
 // <-- Меню удаления с таймлайна
+
 // Скролл полосы таймлайна -->
 function timlineScrollWidth() {
-    console.log('Starting timeline scroll adjustment');
+    //console.log('Starting timeline scroll adjustment');
 
     const MAX_ATTEMPTS = 10;
     let attempts = 0;
@@ -1135,7 +1080,7 @@ function timlineScrollWidth() {
 
         // Проверяем, есть ли что прокручивать
         if (timelineContainer.scrollWidth <= timelineContainer.clientWidth) {
-            console.log('No scroll needed - content fits container');
+            //console.log('No scroll needed - content fits container');
             return true;
         }
 

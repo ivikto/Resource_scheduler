@@ -807,7 +807,7 @@ body {
 
 /* Стиль для ручных операций --> */
 .operation.manual {
-    background-color: rgba(255, 165, 0, 0.58) !important; /* Оранжевый */
+    background-color: rgba(255, 165, 0, 0.79) !important; /* Оранжевый */
     border-left: 3px solid #cc8400; /* Темно-оранжевая граница */
 
 }
