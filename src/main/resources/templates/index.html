@@ -105,7 +105,7 @@
         <div class="available-operations">
             <div class="time-info-container">
                 <div class="time-info-tabs" th:each="entry : ${map}">
-                    <div th:text="${entry.key}"></div>
+                    <div class="time-info-name" th:text="${entry.key}"></div>
                     <div style="font-weight: bold" th:text="${#numbers.formatDecimal(entry.value, 1, 2)} + ' ч.'"></div>
                 </div>
                 <h3 class="time-sum-title"

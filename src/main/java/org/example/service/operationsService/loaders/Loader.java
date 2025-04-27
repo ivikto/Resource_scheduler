@@ -43,7 +43,7 @@ public class Loader {
         subClassList.forEach(subClass -> {
             executorService.execute(() -> {
                 try {
-                    log.info("Processing class: {}", subClass.getSimpleName());
+                    //log.info("Processing class: {}", subClass.getSimpleName());
                     operationsService.getAllOperations(subClass);
                 } catch (Exception e) {
                     log.error("Error processing {}: {}", subClass.getSimpleName(), e.getMessage(), e);

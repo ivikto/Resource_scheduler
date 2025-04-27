@@ -87,7 +87,7 @@ public class JsonParse {
                 }
                 // 3. Сохранение
                 if (productionRepo.existsByRefKey(production.getRefKey())) {
-                    log.warn("Duplicate production ref key: {}", production.getRefKey());
+                    //log.warn("Duplicate production ref key: {}", production.getRefKey());
                     if (production.getCondition().equals(statusRepo.findRefKeyByName("Сделан")) ||
                             production.getCondition().equals(statusRepo.findRefKeyByName("Проверено ОТК")) ||
                             production.getCondition().equals(statusRepo.findRefKeyByName("Готов к выдаче"))) {

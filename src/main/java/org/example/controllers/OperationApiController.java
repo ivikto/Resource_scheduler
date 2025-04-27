@@ -2,6 +2,7 @@ package org.example.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Builder;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -28,10 +31,16 @@ import java.util.*;
 
 public class OperationApiController {
 
-    @Autowired
-    private OperationsTypeRepo operationsTypeRepo;
-    @Autowired
-    private ScheduledOperationRepo scheduledOperationRepo;
+    private final OperationsTypeRepo operationsTypeRepo;
+
+    private final ScheduledOperationRepo scheduledOperationRepo;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    public OperationApiController(OperationsTypeRepo operationsTypeRepo, ScheduledOperationRepo scheduledOperationRepo) {
+        this.operationsTypeRepo = operationsTypeRepo;
+        this.scheduledOperationRepo = scheduledOperationRepo;
+    }
 
     @GetMapping("/operations")
     public List<OperationType> getAllOperations() {
@@ -88,48 +97,79 @@ public class OperationApiController {
 
     @PostMapping("/save-operations")
     @Transactional
-    public ResponseEntity<?> saveOperations(@RequestBody ScheduledOperation operation) {
-        if (operation.getResourceId() == null || operation.getOperations() == null) {
-            return ResponseEntity.badRequest().body("Invalid operation data");
-        }
+    public ResponseEntity<?> saveOperations(@RequestBody String jsonRequest) {
+        System.out.println("New operation: " + jsonRequest);
 
-        // Ищем существующие операции для ресурса
-        List<ScheduledOperation> existingOperations = scheduledOperationRepo
-                .findByResourceId(operation.getResourceId())
-                .map(List::of)
-                .orElse(Collections.emptyList());
+        try {
+            JsonNode rootNode = objectMapper.readTree(jsonRequest);
+            String operationsJson = rootNode.path("operations").asText();
 
-        // Если есть существующие - обновляем первую найденную
-        if (!existingOperations.isEmpty()) {
-            ScheduledOperation existing = existingOperations.get(0);
-            existing.setOperations(operation.getOperations());
-            existing.setOperationDate(LocalDateTime.now());
-            scheduledOperationRepo.save(existing);
-            return ResponseEntity.ok(existing);
-        }
-        // Если нет - создаем новую
-        else {
-            operation.setOperationDate(LocalDateTime.now());
-            ScheduledOperation saved = scheduledOperationRepo.save(operation);
-            return ResponseEntity.ok(saved);
+            if (operationsJson == null || operationsJson.isEmpty()) {
+                return ResponseEntity.badRequest().body("Operations data is missing");
+            }
+
+            // Парсим внутренний JSON как Map<String, List<...>>
+            JsonNode operationsNode = objectMapper.readTree(operationsJson);
+
+            Iterator<Map.Entry<String, JsonNode>> fields = operationsNode.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                String resourceId = entry.getKey();
+                String operationsForResource = entry.getValue().toString();
+
+                // Сохраняем операции для каждого ресурса
+                scheduledOperationRepo.findByResourceId(resourceId)
+                        .ifPresentOrElse(
+                                existing -> {
+                                    existing.setOperations(operationsForResource);
+                                    existing.setOperationDate(LocalDateTime.now());
+                                    scheduledOperationRepo.save(existing);
+                                },
+                                () -> {
+                                    ScheduledOperation newOp = new ScheduledOperation();
+                                    newOp.setResourceId(resourceId);
+                                    newOp.setOperations(operationsForResource);
+                                    newOp.setOperationDate(LocalDateTime.now());
+                                    scheduledOperationRepo.save(newOp);
+                                }
+                        );
+            }
+
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            log.error("Error saving operations", e);
+            return ResponseEntity.internalServerError()
+                    .body("Error processing operations: " + e.getMessage());
         }
     }
 
     @GetMapping("/load-operations")
-    public ResponseEntity<List<ScheduledOperation>> loadOperations(
-            @RequestParam(required = false) String resourceId) {
-        List<ScheduledOperation> operations = resourceId != null
-                ? scheduledOperationRepo.findByResourceId(resourceId)
-                .map(List::of)
-                .orElse(Collections.emptyList())
-                : scheduledOperationRepo.findAll();
-        log.info("Loaded {} operations", operations.size());
-        return ResponseEntity.ok(operations);
+    public String loadOperations() {
+
+        StringBuilder builder = new StringBuilder();
+        String operationsJson = "{\"operations\":{";
+        builder.append(operationsJson);
+
+        List<ScheduledOperation> dbOperations = scheduledOperationRepo.findAll();
+        for (ScheduledOperation dbOperation : dbOperations) {
+            builder.append("\"");
+            builder.append(dbOperation.getResourceId()).append("\":");
+            builder.append(dbOperation.getOperations()).append(",");
+        }
+        builder.replace(builder.length() - 1, builder.length(), "");
+        builder.append("}}");
+
+        System.out.println("Load operations: " + builder.toString());
+
+        return builder.toString();
+
     }
 
     @DeleteMapping("/deleteFromTimeLine/{id}")
     @Transactional
-    public void deleteFromTimeLine(@PathVariable(value = "id") Long operationId, @RequestBody Map<String, String> request, HttpServletResponse response) throws IOException {
+    public void deleteFromTimeLine(@PathVariable(value = "id") String operationId, @RequestBody Map<String, String> request, HttpServletResponse response) throws IOException {
+
         System.out.println(operationId);
         try {
             String resourceId = request.get("resourceId");
@@ -145,34 +185,23 @@ public class OperationApiController {
 
             ScheduledOperation scheduled = scheduledOpt.get();
 
-            // 2. Парсим JSON операций
+            // 1. Парсим JSON операций
             ObjectMapper mapper = new ObjectMapper();
-            Map<String, List<Map<String, Object>>> operationsMap = mapper.readValue(
+            List<Map<String, Object>> operationsList = mapper.readValue(
                     scheduled.getOperations(),
-                    new TypeReference<Map<String, List<Map<String, Object>>>>() {
-                    });
+                    new TypeReference<List<Map<String, Object>>>() {}
+            );
 
-            // 3. Удаляем конкретную операцию из JSON
-            boolean wasRemoved = false;
-            for (List<Map<String, Object>> ops : operationsMap.values()) {
-                Iterator<Map<String, Object>> iterator = ops.iterator();
-                while (iterator.hasNext()) {
-                    Map<String, Object> op = iterator.next();
-                    if (operationId.equals(op.get("id"))) {
-                        iterator.remove();
-                        wasRemoved = true;
-                        break;
-                    }
-                }
-            }
+// 2. Удаляем операцию по ID (надежный способ)
+            operationsList.removeIf(op -> {
+                Object id = op.get("id");
+                // Сравниваем как строки
+                return id.toString().equals(operationId);
+            });
 
-            if (!wasRemoved) {
-                response.sendError(HttpStatus.NOT_FOUND.value(), "Operation not found in schedule");
-                return;
-            }
 
             // 4. Обновляем запись в БД
-            scheduled.setOperations(mapper.writeValueAsString(operationsMap));
+            scheduled.setOperations(mapper.writeValueAsString(operationsList));
             scheduledOperationRepo.save(scheduled);
 
             response.setStatus(HttpStatus.NO_CONTENT.value());

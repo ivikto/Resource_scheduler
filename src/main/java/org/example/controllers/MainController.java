@@ -11,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,11 +44,4 @@ public class MainController {
         return "index";
     }
 
-    @GetMapping("/timeline")
-    public String timeline(Model model) {
-        List<OperationType> operations = operationsTypeRepo.findAll();
-        model.addAttribute("operations", operations);
-
-        return "timeline";
-    }
 }

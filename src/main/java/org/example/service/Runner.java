@@ -30,9 +30,6 @@ public class Runner {
 
         //loader.operationsLoad();
         //loader.resourceLoad();
-
-        log.info("Data Loaded");
-
     }
 
     public Double timeSumForOperations() {
