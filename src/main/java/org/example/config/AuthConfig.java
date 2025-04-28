@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@Slf4j
 @Component
 @PropertySource("classpath:request.properties")
 public class AuthConfig {

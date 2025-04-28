@@ -2,14 +2,12 @@ package org.example.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.entity.operationsType.*;
-import org.example.repo.ResourcesRepo;
+import org.example.entity.operations_type.*;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
-import org.example.service.operationsService.OperationsService;
-import org.example.service.operationsService.loaders.Loader;
+import org.example.service.operations_service.OperationsService;
+import org.example.service.operations_service.loaders.Loader;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

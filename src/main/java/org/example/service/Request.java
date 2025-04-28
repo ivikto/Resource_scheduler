@@ -2,6 +2,8 @@ package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.config.AuthConfig;
+import org.example.entity.Nomenclature;
+import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.repo.ProductionRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +18,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-
-import static org.example.service.JsonParse.set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -26,20 +28,19 @@ import static org.example.service.JsonParse.set;
 public class Request {
 
     private final AuthConfig auth;
-    private final JsonParse jsonParse;
+    private final OdataParser odataParser;
     private final OdataUrl odataUrl;
     private final ProductionRepo productionRepo;
-
+    private final ProductionService productionService;
 
     private int responseCode;
 
-
-    @Autowired
-    public Request(AuthConfig auth, JsonParse jsonParse, OdataUrl odataUrl, ProductionRepo productionRepo) {
+    public Request(AuthConfig auth, OdataParser odataParser, OdataUrl odataUrl, ProductionRepo productionRepo, ProductionService productionService) {
         this.auth = auth;
-        this.jsonParse = jsonParse;
+        this.odataParser = odataParser;
         this.odataUrl = odataUrl;
         this.productionRepo = productionRepo;
+        this.productionService = productionService;
     }
 
     public void doRequest() {
@@ -47,28 +48,39 @@ public class Request {
         String url = odataUrl.getUrl();
         //Выполняем запрос
         String response = request(url);
-        List<Production> productionList = jsonParse.parse(response);
+        List<Production> productionList = null;
+
+        productionList = odataParser.getProductions(response);
+
         productionList.forEach(production -> {
             getNameOfNomenclature(production);
         });
-        //nomenclatureLoad();
+        operationsNomenclatureNameLoad();
         //getNameOfNomenclature();
 
 
     }
 
-    public void nomenclatureLoad() {
-        for (String key : set) {
-            System.out.println(key);
+    public void operationsNomenclatureNameLoad() {
+        List<Nomenclature> operationsNomenclatureList = new ArrayList<>();
+        List<String> OperationsKeys = odataParser.getAllOperations().stream()
+                .map(o -> o.getOperationKey())
+                .distinct()
+                .toList();
+        int count = 1;
+        for (String key : OperationsKeys) {
+            System.out.println();
             String url = odataUrl.getUrl(key);
-            String response2 = request(url);
-            jsonParse.parseNum(response2);
+            String response = request(url);
+            //log.info("{}. {} : {}", count++, key, odataParser.getNomenclatureName(response));
+            operationsNomenclatureList.add(odataParser.getNomenclatureName(response));
         }
+        productionService.saveOperationsNomenclature(operationsNomenclatureList);
     }
 
     public void getNameOfNomenclature(Production production) {
         String url = odataUrl.makeNumUrl(production.getManufacturedProductRefKey());
-        String name = jsonParse.parseNum(request(url));
+        String name = odataParser.getNomenclatureName(request(url)).getDescription();
         production.setManufacturedProductName(name);
         productionRepo.save(production);
 
@@ -109,6 +121,4 @@ public class Request {
 
         return response.toString();
     }
-
-
 }

@@ -129,7 +129,7 @@ body {
 }
 
 .calendar-day.selected {
-    background-color: #4a90e2;
+    background-color: #c64ae2;
     color: white;
     font-weight: 600;
     border-radius: 50%;

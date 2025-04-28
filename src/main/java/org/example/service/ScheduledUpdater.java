@@ -2,12 +2,11 @@ package org.example.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.service.operationsService.loaders.Loader;
+import org.example.service.operations_service.loaders.Loader;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Component

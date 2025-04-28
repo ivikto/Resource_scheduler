@@ -3,7 +3,7 @@ package org.example.controllers;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Resources;
-import org.example.entity.operationsType.OperationType;
+import org.example.entity.operations_type.OperationType;
 import org.example.repo.ResourcesRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
 import org.example.service.Runner;
@@ -28,18 +28,18 @@ public class MainController {
         List<OperationType> operations = operationsTypeRepo.findByNotInTimeLine();
         List<Resources> resources = resourcesRepo.findAll();
 
-        // Получаем общую сумму часов
-        Double timeTotalSum = runner.timeSumForOperations();
+        // Получаем общую сумму часов и переводим в минуты
+        Double timeTotalSum = runner.timeSumForOperations() / 60;
         // Получаем сумму часов для каждой операции
         Map<String, Double> mapWithTimeOfOperations = runner.timeForAllOperations();
 
-
-        model.addAttribute("operations", operations);
-        model.addAttribute("resources", resources);
-        model.addAttribute("timeTotalSum", timeTotalSum / 60);
-        model.addAttribute("map", mapWithTimeOfOperations);
-        model.addAttribute("operationsCount", operations.size());
-
+        // Добавляем атрибуты в модель
+        model
+                .addAttribute("operations", operations)
+                .addAttribute("resources", resources)
+                .addAttribute("timeTotalSum", timeTotalSum)
+                .addAttribute("map", mapWithTimeOfOperations)
+                .addAttribute("operationsCount", operations.size());
 
         return "index";
     }

@@ -5,15 +5,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Builder;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.entity.Operation;
-import org.example.entity.operationsType.OperationType;
+import org.example.entity.operations_type.OperationType;
 import org.example.entity.timeline.ScheduledOperation;
 import org.example.repo.ScheduledOperationRepo;
 import org.example.repo.operationsRepo.OperationsTypeRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @RestController
@@ -75,12 +69,12 @@ public class OperationApiController {
         log.info("Запрос split получен для ID: {} и Count: {}", id, count);
         OperationType oldOperation = operationsTypeRepo.findById(id).orElseThrow();
         List<OperationType> splitOperations = new ArrayList<>();
-        for (int i = 0; i < durations.size(); i++) {
+        for (Integer duration : durations) {
             OperationType splitOperation = OperationType.builder()
                     .color(oldOperation.getColor())
                     .number(oldOperation.getNumber())
                     .name(oldOperation.getName())
-                    .time(durations.get(i))
+                    .time(duration)
                     .priority(oldOperation.getPriority())
                     .resource(oldOperation.getResource())
                     .nomenclatureName(oldOperation.getNomenclatureName())
@@ -90,15 +84,15 @@ public class OperationApiController {
                     .build();
             splitOperations.add(splitOperation);
         }
-        System.out.println(splitOperations);
+
         operationsTypeRepo.saveAll(splitOperations);
         operationsTypeRepo.delete(oldOperation);
     }
 
     @PostMapping("/save-operations")
     @Transactional
-    public ResponseEntity<?> saveOperations(@RequestBody String jsonRequest) {
-        System.out.println("New operation: " + jsonRequest);
+    public ResponseEntity<String> saveOperations(@RequestBody String jsonRequest) {
+        log.info("New operation for save: {}", jsonRequest);
 
         try {
             JsonNode rootNode = objectMapper.readTree(jsonRequest);
@@ -160,7 +154,7 @@ public class OperationApiController {
         builder.replace(builder.length() - 1, builder.length(), "");
         builder.append("}}");
 
-        System.out.println("Load operations: " + builder.toString());
+        log.info("Load operations: {}", builder);
 
         return builder.toString();
 
@@ -170,7 +164,7 @@ public class OperationApiController {
     @Transactional
     public void deleteFromTimeLine(@PathVariable(value = "id") String operationId, @RequestBody Map<String, String> request, HttpServletResponse response) throws IOException {
 
-        System.out.println(operationId);
+        log.info("Operation ID: {}", operationId);
         try {
             String resourceId = request.get("resourceId");
 
@@ -189,7 +183,8 @@ public class OperationApiController {
             ObjectMapper mapper = new ObjectMapper();
             List<Map<String, Object>> operationsList = mapper.readValue(
                     scheduled.getOperations(),
-                    new TypeReference<List<Map<String, Object>>>() {}
+                    new TypeReference<>() {
+                    }
             );
 
 // 2. Удаляем операцию по ID (надежный способ)

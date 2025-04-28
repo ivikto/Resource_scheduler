@@ -5,7 +5,6 @@ import org.example.repo.StatusRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +20,6 @@ public class OdataUrl {
     private String baseUrl;
     private static final String DOC_TYPE = "Document_ЗаказНаПроизводство";
 
-    private String manufacturerRefKey = "2f0c847e-5f73-11ed-a1fd-d2166770609f";
     private final String statusRefKey;
 
     public OdataUrl(StatusRepo statusRepo) {
@@ -37,15 +35,11 @@ public class OdataUrl {
         return makeNumUrl(refKey);
     }
 
-
     // Ссылка на все Заказы на производство в статусе "В работе", Изготовитель "Цех, Пометка на удаление "false"
     private String makeProdUrl() {
         String filterValue = "СостояниеЗаказа_Key";
-        //String filterValue2 = "СтруктурнаяЕдиницаОпераций_Key";
-
         String filter = "?$filter=";
         String filterByValue = URLEncoder.encode(filterValue, StandardCharsets.UTF_8);
-        //String filterByValue2 = URLEncoder.encode(filterValue2, StandardCharsets.UTF_8);
         String type = URLEncoder.encode(DOC_TYPE, StandardCharsets.UTF_8);
         String guid = " eq guid'";
         String delMark = "DeletionMark eq false";
@@ -55,7 +49,7 @@ public class OdataUrl {
                 + delMark
                 + "&$format=json";
 
-        return url.replaceAll(" ", "%20").replaceAll("'", "%27");
+        return url.replace(" ", "%20").replace("'", "%27");
     }
 
     // Ссылка на номенклатуру с фильтром по Ref_Key
@@ -68,7 +62,7 @@ public class OdataUrl {
 
         String url = baseUrl + type + filter + filterByValue + guid + refKey + "'&$format=json";
 
-        return url.replaceAll(" ", "%20").replaceAll("'", "%27");
+        return url.replace(" ", "%20").replace("'", "%27");
     }
 
     private String initStatusRefKey() {
