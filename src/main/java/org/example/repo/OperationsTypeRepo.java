@@ -1,4 +1,4 @@
-package org.example.repo.operationsRepo;
+package org.example.repo;
 
 import org.example.entity.operations_type.OperationType;
 import org.springframework.data.jpa.repository.JpaRepository;

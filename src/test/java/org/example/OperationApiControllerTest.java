@@ -3,7 +3,7 @@ package org.example;
 import org.example.controllers.OperationApiController;
 import org.example.entity.timeline.ScheduledOperation;
 import org.example.repo.ScheduledOperationRepo;
-import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.repo.OperationsTypeRepo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

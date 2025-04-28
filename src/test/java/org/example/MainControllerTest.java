@@ -4,7 +4,8 @@ import org.example.controllers.MainController;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.OperationType;
 import org.example.repo.ResourcesRepo;
-import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.repo.OperationsTypeRepo;
+import org.example.service.OperationsService;
 import org.example.service.Runner;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ public class MainControllerTest {
     @Autowired
     private Runner runner;
 
+    @Autowired
+    private OperationsService operationsService;
+
 
     @Test
     void test() throws Exception {
@@ -48,8 +52,8 @@ public class MainControllerTest {
 
         when(operationsTypeRepo.findByNotInTimeLine()).thenReturn(mockOperations);
         when(resourcesRepo.findAll()).thenReturn(mockResources);
-        when(runner.timeSumForOperations()).thenReturn(180.0);
-        when(runner.timeForAllOperations()).thenReturn(mockMap);
+        when(operationsService.timeSumForOperations()).thenReturn(180.0);
+        when(operationsService.timeForAllOperations()).thenReturn(mockMap);
 
 
         mockMvc.perform(get("/"))

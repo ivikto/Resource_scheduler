@@ -10,11 +10,10 @@ import org.example.repo.NomenclatureRepo;
 import org.example.repo.OperationRepo;
 import org.example.repo.ProductionRepo;
 import org.example.repo.StatusRepo;
-import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.repo.OperationsTypeRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -29,7 +28,6 @@ public class ProductionService {
     private final StatusRepo statusRepo;
     private final OperationsTypeRepo operationsTypeRepo;
     private final NomenclatureRepo nomenclatureRepo;
-
 
     public void saveProductionsAndOperations(List<Production> productions, List<Production> newProductions) {
         for (Production production : productions) {
@@ -72,6 +70,9 @@ public class ProductionService {
 
         if (!newNomenclatureList.isEmpty()) {
             nomenclatureRepo.saveAll(newNomenclatureList);
+            log.info("New nomenclature for Operations added {}", newNomenclatureList);
+        } else {
+            log.info("No new nomenclature for Operations");
         }
     }
 }

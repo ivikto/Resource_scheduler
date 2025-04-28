@@ -18,13 +18,11 @@ import org.example.repo.NomenclatureRepo;
 import org.example.repo.OperationRepo;
 import org.example.repo.ProductionRepo;
 import org.example.repo.StatusRepo;
-import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.repo.OperationsTypeRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
@@ -32,8 +30,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class OdataParser {
 
-    @Getter
-    private static Set<String> set = new HashSet<>();
     private List<Production> productions = new ArrayList<>();
     private List<Production> newProductions = new ArrayList<>();
     @Getter
@@ -118,7 +114,6 @@ public class OdataParser {
         try {
             rootArray = mapper.readTree(json);
         } catch (JsonProcessingException e) {
-            log.error(e.getMessage());
             throw new InvalidJsonDataException(e.getMessage());
         }
 

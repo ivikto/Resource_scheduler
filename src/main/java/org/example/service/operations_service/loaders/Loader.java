@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.*;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationsService;
+import org.example.service.OperationsService;
 import org.example.utils.SpringClassUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,6 @@ public class Loader {
         subClassList.forEach(subClass -> {
             executorService.execute(() -> {
                 try {
-                    //log.info("Processing class: {}", subClass.getSimpleName());
                     operationsService.getAllOperations(subClass);
                 } catch (Exception e) {
                     log.error("Error processing {}: {}", subClass.getSimpleName(), e.getMessage(), e);
@@ -211,7 +210,7 @@ public class Loader {
                 .build();
         resources.add(resource19);
 
-        System.out.println(resources);
+        log.info("Resources: {}", resources);
 
         resourcesRepo.saveAll(resources);
     }

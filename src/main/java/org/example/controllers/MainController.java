@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.OperationType;
 import org.example.repo.ResourcesRepo;
-import org.example.repo.operationsRepo.OperationsTypeRepo;
-import org.example.service.Runner;
+import org.example.repo.OperationsTypeRepo;
+import org.example.service.OperationsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,7 +21,7 @@ public class MainController {
 
     private final OperationsTypeRepo operationsTypeRepo;
     private final ResourcesRepo resourcesRepo;
-    private final Runner runner;
+    private final OperationsService operationsService;
 
     @GetMapping("/")
     public String index(Model model) {
@@ -29,9 +29,9 @@ public class MainController {
         List<Resources> resources = resourcesRepo.findAll();
 
         // Получаем общую сумму часов и переводим в минуты
-        Double timeTotalSum = runner.timeSumForOperations() / 60;
+        Double timeTotalSum = operationsService.timeSumForOperations() / 60;
         // Получаем сумму часов для каждой операции
-        Map<String, Double> mapWithTimeOfOperations = runner.timeForAllOperations();
+        Map<String, Double> mapWithTimeOfOperations = operationsService.timeForAllOperations();
 
         // Добавляем атрибуты в модель
         model

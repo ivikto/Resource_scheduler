@@ -6,7 +6,6 @@ import org.example.entity.Nomenclature;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.repo.ProductionRepo;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -32,8 +30,6 @@ public class Request {
     private final OdataUrl odataUrl;
     private final ProductionRepo productionRepo;
     private final ProductionService productionService;
-
-    private int responseCode;
 
     public Request(AuthConfig auth, OdataParser odataParser, OdataUrl odataUrl, ProductionRepo productionRepo, ProductionService productionService) {
         this.auth = auth;
@@ -48,31 +44,23 @@ public class Request {
         String url = odataUrl.getUrl();
         //Выполняем запрос
         String response = request(url);
-        List<Production> productionList = null;
-
-        productionList = odataParser.getProductions(response);
-
-        productionList.forEach(production -> {
-            getNameOfNomenclature(production);
-        });
+        List<Production> productionList = odataParser.getProductions(response);
+        productionList.forEach(this::getNameOfNomenclature);
         operationsNomenclatureNameLoad();
         //getNameOfNomenclature();
-
-
     }
 
     public void operationsNomenclatureNameLoad() {
         List<Nomenclature> operationsNomenclatureList = new ArrayList<>();
-        List<String> OperationsKeys = odataParser.getAllOperations().stream()
-                .map(o -> o.getOperationKey())
+        List<String> operationsKeys = odataParser.getAllOperations().stream()
+                .map(Operation::getOperationKey)
                 .distinct()
                 .toList();
-        int count = 1;
-        for (String key : OperationsKeys) {
-            System.out.println();
+
+        for (String key : operationsKeys) {
             String url = odataUrl.getUrl(key);
             String response = request(url);
-            //log.info("{}. {} : {}", count++, key, odataParser.getNomenclatureName(response));
+
             operationsNomenclatureList.add(odataParser.getNomenclatureName(response));
         }
         productionService.saveOperationsNomenclature(operationsNomenclatureList);
@@ -86,8 +74,8 @@ public class Request {
 
     }
 
-
     private String request(String requestUrl) {
+        int responseCode;
         StringBuilder response = new StringBuilder();
         String line;
         try {
@@ -96,9 +84,7 @@ public class Request {
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-
             connection.setRequestProperty("Authorization", "Basic " + auth.getEncodedAuth());
-
             responseCode = connection.getResponseCode();
 
 
