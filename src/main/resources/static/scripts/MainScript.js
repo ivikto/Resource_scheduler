@@ -21,6 +21,15 @@ export function setCurrentDate(date) {
 }
 
 export let zoomLevel = 10; // минут на ячейку
+
+export function getZoomLevel() {
+    return zoomLevel; // Возвращаем копию
+}
+
+export function setZoomLevel(level) {
+    zoomLevel = level;
+}
+
 export let scheduledOperations = {}; // Объект для хранения операций по ресурсам
 // Глобальные переменные для хранения выбранной операции
 let selectedOperationId = null;
