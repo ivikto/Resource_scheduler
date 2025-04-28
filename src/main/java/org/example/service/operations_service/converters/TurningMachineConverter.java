@@ -7,8 +7,8 @@ import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.TurningMachine;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationBuilder;
-import org.example.service.operations_service.OperationSaver;
+import org.example.service.operations_service.OperationBuilderService;
+import org.example.service.operations_service.OperationSaverService;
 import org.example.service.operations_service.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,8 @@ import java.util.List;
 public class TurningMachineConverter implements OperationConverter<TurningMachine> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaver operationSaver;
-    private final OperationBuilder operationBuilder;
+    private final OperationSaverService operationSaverService;
+    private final OperationBuilderService operationBuilderService;
     private Resources resource;
 
     @PostConstruct
@@ -35,9 +35,9 @@ public class TurningMachineConverter implements OperationConverter<TurningMachin
         if (production == null) {
             throw new IllegalArgumentException("Production cannot be null");
         }
-        TurningMachine turningMachine = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), TurningMachine::new);
+        TurningMachine turningMachine = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), TurningMachine::new);
 
-        operationSaver.saveOperation(turningMachine);
+        operationSaverService.saveOperation(turningMachine);
 
         return turningMachine;
     }

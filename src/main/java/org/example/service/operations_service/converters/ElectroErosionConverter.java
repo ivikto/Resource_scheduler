@@ -7,8 +7,8 @@ import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.ElectroErosion;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationBuilder;
-import org.example.service.operations_service.OperationSaver;
+import org.example.service.operations_service.OperationBuilderService;
+import org.example.service.operations_service.OperationSaverService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +19,8 @@ import java.util.List;
 public class ElectroErosionConverter implements OperationConverter<ElectroErosion> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaver operationSaver;
-    private final OperationBuilder operationBuilder;
+    private final OperationSaverService operationSaverService;
+    private final OperationBuilderService operationBuilderService;
     private Resources resource;
 
     @PostConstruct
@@ -35,8 +35,8 @@ public class ElectroErosionConverter implements OperationConverter<ElectroErosio
         if (production == null) {
             throw new IllegalArgumentException("Production cannot be null");
         }
-        ElectroErosion electroErosion = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), ElectroErosion::new);
-        operationSaver.saveOperation(electroErosion);
+        ElectroErosion electroErosion = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), ElectroErosion::new);
+        operationSaverService.saveOperation(electroErosion);
 
         return electroErosion;
     }

@@ -17,7 +17,7 @@ public interface OperationsTypeRepo extends JpaRepository<OperationType, Integer
     List<OperationType> findByNotInTimeLine();
 
     @Query("SELECT ot FROM OperationType ot WHERE ot.refKey = :ref_key")
-    List<OperationType> findByRefKey(String ref_key);
+    List<OperationType> findByRefKey(String refKey);
 
 
 

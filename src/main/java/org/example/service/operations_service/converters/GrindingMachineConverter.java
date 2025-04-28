@@ -7,8 +7,8 @@ import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.GrindingMachine;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationBuilder;
-import org.example.service.operations_service.OperationSaver;
+import org.example.service.operations_service.OperationBuilderService;
+import org.example.service.operations_service.OperationSaverService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,8 +19,8 @@ import java.util.List;
 public class GrindingMachineConverter implements OperationConverter<GrindingMachine> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaver operationSaver;
-    private final OperationBuilder operationBuilder;
+    private final OperationSaverService operationSaverService;
+    private final OperationBuilderService operationBuilderService;
     private Resources resource;
 
     @PostConstruct
@@ -34,9 +34,9 @@ public class GrindingMachineConverter implements OperationConverter<GrindingMach
         if (production == null) {
             throw new IllegalArgumentException("Production cannot be null");
         }
-        GrindingMachine grindingMachine = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), GrindingMachine::new);
+        GrindingMachine grindingMachine = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), GrindingMachine::new);
 
-        operationSaver.saveOperation(grindingMachine);
+        operationSaverService.saveOperation(grindingMachine);
 
         return grindingMachine;
     }

@@ -7,8 +7,8 @@ import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.Welding;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationBuilder;
-import org.example.service.operations_service.OperationSaver;
+import org.example.service.operations_service.OperationBuilderService;
+import org.example.service.operations_service.OperationSaverService;
 import org.example.service.operations_service.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,8 @@ import java.util.List;
 public class WeldingConverter implements OperationConverter<Welding> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaver operationSaver;
-    private final OperationBuilder operationBuilder;
+    private final OperationSaverService operationSaverService;
+    private final OperationBuilderService operationBuilderService;
     private Resources resource;
 
     @PostConstruct
@@ -35,9 +35,9 @@ public class WeldingConverter implements OperationConverter<Welding> {
         if (production == null) {
             throw new IllegalArgumentException("Production cannot be null");
         }
-        Welding welding = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), Welding::new);
+        Welding welding = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), Welding::new);
 
-        operationSaver.saveOperation(welding);
+        operationSaverService.saveOperation(welding);
 
         return welding;
     }

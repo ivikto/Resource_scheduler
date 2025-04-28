@@ -28,7 +28,7 @@ import java.util.List;
 @Service
 @Data
 @RequiredArgsConstructor
-public class OdataParser {
+public class OdataParserService {
 
     private List<Production> productions = new ArrayList<>();
     private List<Production> newProductions = new ArrayList<>();

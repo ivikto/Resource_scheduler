@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 @Slf4j
 @PropertySource("classpath:request.properties")
-public class OdataUrl {
+public class OdataUrlService {
 
     private final StatusRepo statusRepo;
 
@@ -22,7 +22,7 @@ public class OdataUrl {
 
     private final String statusRefKey;
 
-    public OdataUrl(StatusRepo statusRepo) {
+    public OdataUrlService(StatusRepo statusRepo) {
         this.statusRepo = statusRepo;
         statusRefKey = initStatusRefKey();
     }

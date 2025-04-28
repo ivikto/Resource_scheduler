@@ -23,28 +23,28 @@ import java.util.List;
 @Slf4j
 @Component
 @PropertySource("classpath:request.properties")
-public class Request {
+public class RequestService {
 
     private final AuthConfig auth;
-    private final OdataParser odataParser;
-    private final OdataUrl odataUrl;
+    private final OdataParserService odataParserService;
+    private final OdataUrlService odataUrlService;
     private final ProductionRepo productionRepo;
     private final ProductionService productionService;
 
-    public Request(AuthConfig auth, OdataParser odataParser, OdataUrl odataUrl, ProductionRepo productionRepo, ProductionService productionService) {
+    public RequestService(AuthConfig auth, OdataParserService odataParserService, OdataUrlService odataUrlService, ProductionRepo productionRepo, ProductionService productionService) {
         this.auth = auth;
-        this.odataParser = odataParser;
-        this.odataUrl = odataUrl;
+        this.odataParserService = odataParserService;
+        this.odataUrlService = odataUrlService;
         this.productionRepo = productionRepo;
         this.productionService = productionService;
     }
 
     public void doRequest() {
         //Получаем ссылку для запроса
-        String url = odataUrl.getUrl();
+        String url = odataUrlService.getUrl();
         //Выполняем запрос
         String response = request(url);
-        List<Production> productionList = odataParser.getProductions(response);
+        List<Production> productionList = odataParserService.getProductions(response);
         productionList.forEach(this::getNameOfNomenclature);
         operationsNomenclatureNameLoad();
         //getNameOfNomenclature();
@@ -52,23 +52,23 @@ public class Request {
 
     public void operationsNomenclatureNameLoad() {
         List<Nomenclature> operationsNomenclatureList = new ArrayList<>();
-        List<String> operationsKeys = odataParser.getAllOperations().stream()
+        List<String> operationsKeys = odataParserService.getAllOperations().stream()
                 .map(Operation::getOperationKey)
                 .distinct()
                 .toList();
 
         for (String key : operationsKeys) {
-            String url = odataUrl.getUrl(key);
+            String url = odataUrlService.getUrl(key);
             String response = request(url);
 
-            operationsNomenclatureList.add(odataParser.getNomenclatureName(response));
+            operationsNomenclatureList.add(odataParserService.getNomenclatureName(response));
         }
         productionService.saveOperationsNomenclature(operationsNomenclatureList);
     }
 
     public void getNameOfNomenclature(Production production) {
-        String url = odataUrl.makeNumUrl(production.getManufacturedProductRefKey());
-        String name = odataParser.getNomenclatureName(request(url)).getDescription();
+        String url = odataUrlService.makeNumUrl(production.getManufacturedProductRefKey());
+        String name = odataParserService.getNomenclatureName(request(url)).getDescription();
         production.setManufacturedProductName(name);
         productionRepo.save(production);
 

@@ -1,4 +1,4 @@
-package org.example.service.operations_service.loaders;
+package org.example.service;
 
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.*;
 import org.example.repo.ResourcesRepo;
-import org.example.service.OperationsService;
 import org.example.utils.SpringClassUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,14 +20,14 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class Loader {
+public class DataLoaderService {
 
     private final ResourcesRepo resourcesRepo;
     private final OperationsService operationsService;
     private final ExecutorService executorService;
 
     @Autowired
-    public Loader(ResourcesRepo resourcesRepo, OperationsService operationsService) {
+    public DataLoaderService(ResourcesRepo resourcesRepo, OperationsService operationsService) {
         this.resourcesRepo = resourcesRepo;
         this.operationsService = operationsService;
         this.executorService = Executors.newFixedThreadPool(1);

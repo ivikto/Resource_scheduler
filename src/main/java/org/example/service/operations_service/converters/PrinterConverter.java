@@ -7,8 +7,8 @@ import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.Printer;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationBuilder;
-import org.example.service.operations_service.OperationSaver;
+import org.example.service.operations_service.OperationBuilderService;
+import org.example.service.operations_service.OperationSaverService;
 import org.example.service.operations_service.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,8 @@ import java.util.List;
 public class PrinterConverter implements OperationConverter<Printer> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaver operationSaver;
-    private final OperationBuilder operationBuilder;
+    private final OperationSaverService operationSaverService;
+    private final OperationBuilderService operationBuilderService;
     private Resources resource;
 
     @PostConstruct
@@ -35,9 +35,9 @@ public class PrinterConverter implements OperationConverter<Printer> {
         if (production == null) {
             throw new IllegalArgumentException("Production cannot be null");
         }
-        Printer printer = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), Printer::new);
+        Printer printer = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), Printer::new);
 
-        operationSaver.saveOperation(printer);
+        operationSaverService.saveOperation(printer);
 
         return printer;
     }

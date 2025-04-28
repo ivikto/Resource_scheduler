@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 @Service
-public class OperationBuilder {
+public class OperationBuilderService {
 
     public <T extends OperationType> T buildOperation(
             Production production,

@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OperationSaver {
+public class OperationSaverService {
 
     private final OperationsTypeRepo operationsTypeRepo;
 

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.entity.operations_type.OperationType;
+import org.example.exception.OperationSavingError;
 import org.example.service.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ import java.util.Map;
 public class OperationApiController {
 
     private final OperationSplitService operationSplitService;
-    private final OperationParser operationParser;
+    private final OperationParserService operationParserService;
     private final OperationsService operationsService;
     private final OperationsTypeService operationsTypeService;
     private final ScheduledOperationService scheduledOperationService;
@@ -63,7 +64,7 @@ public class OperationApiController {
 
         // Парсим внутренний JSON как Map<String, List<...>>
         try {
-            operationsService.saveOperations(operationParser.parseOperation(jsonRequest));
+            operationsService.saveOperations(operationParserService.parseOperation(jsonRequest));
         } catch (Exception e) {
             log.error("Error saving operations", e);
             return ResponseEntity.internalServerError()
@@ -87,7 +88,7 @@ public class OperationApiController {
             scheduledOperationService.deleteScheduledOperation(operationId, request, response);
         } catch (IOException e) {
             log.error("Error saving operations {}",operationId, e);
-            throw new RuntimeException(e);
+            throw new OperationSavingError(e.getMessage());
         }
     }
 }

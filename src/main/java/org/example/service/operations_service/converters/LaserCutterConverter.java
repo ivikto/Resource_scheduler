@@ -7,8 +7,8 @@ import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.LaserCutter;
 import org.example.repo.ResourcesRepo;
-import org.example.service.operations_service.OperationBuilder;
-import org.example.service.operations_service.OperationSaver;
+import org.example.service.operations_service.OperationBuilderService;
+import org.example.service.operations_service.OperationSaverService;
 import org.example.service.operations_service.TypeOfOperations;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +20,8 @@ import java.util.List;
 public class LaserCutterConverter implements OperationConverter<LaserCutter> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaver operationSaver;
-    private final OperationBuilder operationBuilder;
+    private final OperationSaverService operationSaverService;
+    private final OperationBuilderService operationBuilderService;
     private Resources resource;
 
     @PostConstruct
@@ -36,9 +36,9 @@ public class LaserCutterConverter implements OperationConverter<LaserCutter> {
             throw new IllegalArgumentException("Production cannot be null");
         }
 
-        LaserCutter laserCutter = operationBuilder.buildOperation(production, resource, getSupportedNomenclatures(), LaserCutter::new);
+        LaserCutter laserCutter = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), LaserCutter::new);
 
-        operationSaver.saveOperation(laserCutter);
+        operationSaverService.saveOperation(laserCutter);
 
         return laserCutter;
     }
