@@ -75,22 +75,28 @@ public class OdataParserService {
     }
 
     private void jsonToProduction(JsonNode value) {
-        String nomenclaturaKey = null;
+
         try {
             Production production = mapper.treeToValue(value, Production.class);
             JsonNode myNode = value.get("Продукция");
-            for (JsonNode operation : myNode) {
-                try {
-                    nomenclaturaKey = operation.path("Номенклатура_Key").asText();
-                } catch (Exception e) {
-                    throw new NomenclatureKeyMissingException(e.getMessage());
-                }
-            }
-            production.setManufacturedProductRefKey(nomenclaturaKey);
+            String numKey = getNomenclaturaKey(myNode);
+            production.setManufacturedProductRefKey(numKey);
             productions.add(production);
         } catch (JsonProcessingException e) {
             throw new InvalidJsonDataException("JSON parsing error", e);
         }
+    }
+
+    private String getNomenclaturaKey(JsonNode myNode) {
+        String numKey = null;
+        for (JsonNode operation : myNode) {
+            try {
+                numKey = operation.path("Номенклатура_Key").asText();
+            } catch (Exception e) {
+                throw new NomenclatureKeyMissingException(e.getMessage());
+            }
+        }
+        return numKey;
     }
 
     private void parseOperations() {

@@ -47,7 +47,6 @@ public class RequestService {
         List<Production> productionList = odataParserService.getProductions(response);
         productionList.forEach(this::getNameOfNomenclature);
         operationsNomenclatureNameLoad();
-        //getNameOfNomenclature();
     }
 
     public void operationsNomenclatureNameLoad() {

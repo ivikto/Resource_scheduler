@@ -13,8 +13,5 @@ public class Runner {
 
     public void run() {
 
-        //updater.updateProductions();
-        //loader.operationsLoad();
-        //loader.resourceLoad();
     }
 }

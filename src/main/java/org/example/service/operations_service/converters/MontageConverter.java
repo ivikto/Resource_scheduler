@@ -35,9 +35,8 @@ public class MontageConverter implements OperationConverter<Montage> {
         if (production == null) {
             throw new IllegalArgumentException("Production cannot be null");
         }
-        Montage montage = operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), Montage::new);
 
-        return montage;
+        return operationBuilderService.buildOperation(production, resource, getSupportedNomenclatures(), Montage::new);
     }
 
     @Override

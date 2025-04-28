@@ -10,6 +10,9 @@ import java.util.stream.Collectors;
 @Service
 public class SpringClassUtils {
 
+    private SpringClassUtils() {
+    }
+
     public static List<Class<?>> findSubclasses(Class<?> superClass, String basePackage) {
         ClassPathScanningCandidateComponentProvider provider =
                 new ClassPathScanningCandidateComponentProvider(false);

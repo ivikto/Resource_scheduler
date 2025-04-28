@@ -1,7 +1,6 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.entity.Operation;
 import org.example.entity.operations_type.OperationType;
 import org.example.repo.OperationsTypeRepo;
 import org.springframework.stereotype.Service;

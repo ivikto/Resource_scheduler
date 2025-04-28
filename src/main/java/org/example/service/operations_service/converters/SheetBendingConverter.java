@@ -51,13 +51,6 @@ public class SheetBendingConverter implements OperationConverter<SheetBending> {
         );
     }
 
-    private double calculateTime(List<Operation> operations) {
-        return operations.stream()
-                .filter(operation -> getSupportedNomenclatures().contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
-                .sum() * 60;
-    }
-
     @Override
     public Class<SheetBending> getType() {
         return SheetBending.class;

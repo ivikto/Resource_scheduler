@@ -38,8 +38,7 @@ public class DataLoaderService {
         List<Class<?>> subClassList = SpringClassUtils.findSubclasses(OperationType.class, "org.example.entity");
         CountDownLatch latch = new CountDownLatch(subClassList.size());
 
-        subClassList.forEach(subClass -> {
-            executorService.execute(() -> {
+        subClassList.forEach(subClass -> executorService.execute(() -> {
                 try {
                     operationsService.getAllOperations(subClass);
                 } catch (Exception e) {
@@ -47,8 +46,7 @@ public class DataLoaderService {
                 } finally {
                     latch.countDown(); // Уменьшаем счётчик в любом случае
                 }
-            });
-        });
+        }));
 
         latch.await(); // Ждём завершения всех задач
     }
