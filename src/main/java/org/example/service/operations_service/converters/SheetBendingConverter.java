@@ -3,7 +3,6 @@ package org.example.service.operations_service.converters;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.Resources;
 import org.example.entity.operations_type.SheetBending;

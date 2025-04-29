@@ -46,9 +46,9 @@ class OperationApiControllerTest {
     @Test
     void loadOperationTest() throws Exception {
 
-        List<ScheduledOperation> DbOperationsMock = List.of(new ScheduledOperation(), new ScheduledOperation());
+        List<ScheduledOperation> dbOperationsMock = List.of(new ScheduledOperation(), new ScheduledOperation());
 
-        when(scheduledOperationRepo.findAll()).thenReturn(DbOperationsMock);
+        when(scheduledOperationRepo.findAll()).thenReturn(dbOperationsMock);
 
         mockMvc.perform(get("/api/load-operations"))
                 .andExpect(status().isOk());
@@ -129,7 +129,6 @@ class OperationApiControllerTest {
     void scheduledOperationDeleteTest() throws Exception {
         String operationId = "100";
         Map<String, String> request = new HashMap<>();
-        HttpServletResponse response = new MockHttpServletResponse();
 
         mockMvc.perform(delete("/api/deleteFromTimeLine/{id}", operationId)
                         .contentType(MediaType.APPLICATION_JSON)
