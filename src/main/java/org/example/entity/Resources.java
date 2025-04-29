@@ -1,10 +1,11 @@
 package org.example.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import org.example.entity.operations_type.OperationType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -19,4 +20,6 @@ public class Resources {
     private String viewName;
     private String name;
     private String color;
+    @OneToMany(mappedBy = "resource", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OperationType> operationType = new ArrayList<>();
 }

@@ -1,6 +1,5 @@
 // Скролл полосы таймлайна -->
-import {renderTimeline} from "./MainScript.js";
-import {zoomLevel} from "./MainScript.js";
+import {getZoomLevel, renderTimeline, setZoomLevel} from "./MainScript.js";
 
 export function timelineScrollWidth() {
     const MAX_ATTEMPTS = 2;
@@ -58,12 +57,12 @@ export function setupZoomControls() {
     zoomSlider.min = 5;
     zoomSlider.max = 20;
     zoomSlider.step = 5;
-    zoomSlider.value = zoomLevel;
-    zoomValue.textContent = `${zoomLevel} мин`;
+    zoomSlider.value = getZoomLevel();
+    zoomValue.textContent = `${getZoomLevel()} мин`;
 
     zoomSlider.addEventListener('input', function(e) {
-        zoomLevel = parseInt(e.target.value);
-        zoomValue.textContent = `${zoomLevel} мин`;
+        setZoomLevel(parseInt(e.target.value));
+        zoomValue.textContent = `${getZoomLevel()} мин`;
         renderTimeline();
     });
 }

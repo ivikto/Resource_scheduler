@@ -2,7 +2,6 @@ package org.example.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -10,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-@Slf4j
 @Component
 @PropertySource("classpath:request.properties")
 public class AuthConfig {

@@ -3,7 +3,7 @@ package org.example;
 import org.example.controllers.OperationApiController;
 import org.example.entity.timeline.ScheduledOperation;
 import org.example.repo.ScheduledOperationRepo;
-import org.example.repo.operationsRepo.OperationsTypeRepo;
+import org.example.repo.OperationsTypeRepo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @WebMvcTest(OperationApiController.class)
 @Import({TestConfiguration.class})
-public class OperationApiControllerTest {
+class OperationApiControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,9 +34,9 @@ public class OperationApiControllerTest {
     @Test
     void testLoadOperation() throws Exception {
 
-        List<ScheduledOperation> MockDbOperations = List.of(new ScheduledOperation(), new ScheduledOperation());
+        List<ScheduledOperation> DbOperationsMock = List.of(new ScheduledOperation(), new ScheduledOperation());
 
-        when(scheduledOperationRepo.findAll()).thenReturn(MockDbOperations);
+        when(scheduledOperationRepo.findAll()).thenReturn(DbOperationsMock);
 
         mockMvc.perform(get("/api/load-operations"))
                 .andExpect(status().isOk());
@@ -45,9 +45,9 @@ public class OperationApiControllerTest {
     @Test
     void testSaveOperation() throws Exception {
 
-        List<ScheduledOperation> MockDbOperations = List.of(new ScheduledOperation(), new ScheduledOperation());
+        List<ScheduledOperation> DbOperationsMock = List.of(new ScheduledOperation(), new ScheduledOperation());
 
-        when(scheduledOperationRepo.saveAll(MockDbOperations)).thenReturn(MockDbOperations);
+        when(scheduledOperationRepo.saveAll(DbOperationsMock)).thenReturn(DbOperationsMock);
 
         mockMvc.perform(get("/api/save-operations"))
                 .andExpect(status().isOk());
