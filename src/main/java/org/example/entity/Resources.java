@@ -2,7 +2,7 @@ package org.example.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.entity.operations_type.OperationType;
+import org.example.entity.operations_type.OperationKit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,5 +21,5 @@ public class Resources {
     private String name;
     private String color;
     @OneToMany(mappedBy = "resource", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OperationType> operationType = new ArrayList<>();
+    private List<OperationKit> operationKit = new ArrayList<>();
 }

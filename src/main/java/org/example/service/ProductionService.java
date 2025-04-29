@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.entity.Nomenclature;
 import org.example.entity.Operation;
 import org.example.entity.Production;
-import org.example.entity.operations_type.OperationType;
+import org.example.entity.operations_type.OperationKit;
 import org.example.repo.NomenclatureRepo;
 import org.example.repo.OperationRepo;
 import org.example.repo.ProductionRepo;
 import org.example.repo.StatusRepo;
-import org.example.repo.OperationsTypeRepo;
+import org.example.repo.OperationKitRepo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +26,7 @@ public class ProductionService {
     private final OperationRepo operationRepo;
     private final ProductionRepo productionRepo;
     private final StatusRepo statusRepo;
-    private final OperationsTypeRepo operationsTypeRepo;
+    private final OperationKitRepo operationKitRepo;
     private final NomenclatureRepo nomenclatureRepo;
 
     public void saveProductionsAndOperations(List<Production> productions, List<Production> newProductions) {
@@ -40,16 +40,16 @@ public class ProductionService {
                     production.setFinish(true);
                     productionRepo.save(production);
 
-                    List<OperationType> operationsTypeOfProduction = operationsTypeRepo.findByRefKey(production.getRefKey());
+                    List<OperationKit> operationsTypeOfProduction = operationKitRepo.findByRefKey(production.getRefKey());
                     operationsTypeOfProduction.forEach(operationType -> operationType.setFinish(true));
-                    operationsTypeRepo.saveAll(operationsTypeOfProduction);
+                    operationKitRepo.saveAll(operationsTypeOfProduction);
 
                     List<Operation> operationsOfProduction = operationRepo.getByProduction(production);
                     operationsOfProduction.forEach(operation -> operation.setFinish(true));
                     operationRepo.saveAll(operationsOfProduction);
                     log.info("Выполнено изменение isFinish для operation {} и operationType {} ",
                             operationsOfProduction.stream().map(Operation::getId).toList(),
-                            operationsTypeOfProduction.stream().map(OperationType::getId).toList());
+                            operationsTypeOfProduction.stream().map(OperationKit::getId).toList());
                 }
 
             } else {

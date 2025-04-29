@@ -3,10 +3,10 @@ package org.example.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.entity.operations_type.OperationType;
+import org.example.entity.operations_type.OperationKit;
 import org.example.entity.timeline.ScheduledOperation;
 import org.example.repo.ProductionRepo;
-import org.example.repo.OperationsTypeRepo;
+import org.example.repo.OperationKitRepo;
 import org.example.repo.ScheduledOperationRepo;
 import org.example.service.operations_service.converters.OperationConverter;
 import org.example.service.operations_service.converters.OperationConverterFactory;
@@ -21,26 +21,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class OperationsService {
+public class OperationService {
 
-    private final OperationsTypeRepo operationsTypeRepo;
+    private final OperationKitRepo operationKitRepo;
     private final OperationConverterFactory converterFactory;
     private final ProductionRepo productionRepo;
     private final ScheduledOperationRepo scheduledOperationRepo;
 
     public Double timeSumForOperations() {
-        List<OperationType> operations = operationsTypeRepo.findByNotInTimeLine();
+        List<OperationKit> operations = operationKitRepo.findByNotInTimeLine();
 
         return operations.stream()
-                .mapToDouble(OperationType::getTime)
+                .mapToDouble(OperationKit::getTime)
                 .sum();
     }
 
     public Map<String, Double> timeForAllOperations() {
-        List<OperationType> operations = operationsTypeRepo.findByNotInTimeLine();
+        List<OperationKit> operations = operationKitRepo.findByNotInTimeLine();
 
         return operations.stream()
-                .collect(Collectors.groupingBy(OperationType::getName,
+                .collect(Collectors.groupingBy(OperationKit::getName,
                         Collectors.summingDouble(op -> op.getTime() / 60.0)));
 
     }
@@ -81,22 +81,5 @@ public class OperationsService {
 
     }
 
-    public StringBuilder loadOperations() {
-        StringBuilder builder = new StringBuilder();
-        String operationsJson = "{\"operations\":{";
-        builder.append(operationsJson);
 
-        List<ScheduledOperation> dbOperations = scheduledOperationRepo.findAll();
-        for (ScheduledOperation dbOperation : dbOperations) {
-            builder.append("\"");
-            builder.append(dbOperation.getResourceId()).append("\":");
-            builder.append(dbOperation.getOperations()).append(",");
-        }
-        builder.replace(builder.length() - 1, builder.length(), "");
-        builder.append("}}");
-
-        log.info("Load operations: {}", builder);
-
-        return builder;
-    }
 }

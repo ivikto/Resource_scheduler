@@ -501,25 +501,6 @@ async function addInTimeLine(id) {
 
 }
 
-async function delFromTimeLine(id) {
-    if (id !== 'manual') {
-        try {
-            const response = await fetch(`/api/delFromTimeLine/${id}`, {
-                method: 'GET',
-                headers: {'Accept': 'application/json'}
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Ошибка сервера: ${response.status} - ${errorText}`);
-            }
-        } catch (error) {
-            console.error('Ошибка при удалении из timeline:', error);
-            throw error;
-        }
-    }
-
-}
 
 /* Сохранение и загрузка операций таймлайна в бд --> */
 export async function saveOperationsToBackend() {
@@ -643,7 +624,6 @@ async function deleteOperation(index, id) {
             await saveOperationsToBackend();
         }
 
-        await delFromTimeLine(id);
         await updateAvailableOperations(); // Обновляем список операций
 
         if (operationEl?.parentNode) {

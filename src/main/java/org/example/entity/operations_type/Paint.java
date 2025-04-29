@@ -3,7 +3,7 @@ package org.example.entity.operations_type;
 import jakarta.persistence.Entity;
 
 @Entity
-public class Paint extends OperationType {
+public class Paint extends OperationKit {
 
     public Paint() {
         this.name = "Станция окраски";

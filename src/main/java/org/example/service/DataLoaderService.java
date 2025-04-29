@@ -23,24 +23,24 @@ import java.util.concurrent.TimeUnit;
 public class DataLoaderService {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationsService operationsService;
+    private final OperationService operationService;
     private final ExecutorService executorService;
 
     @Autowired
-    public DataLoaderService(ResourcesRepo resourcesRepo, OperationsService operationsService) {
+    public DataLoaderService(ResourcesRepo resourcesRepo, OperationService operationService) {
         this.resourcesRepo = resourcesRepo;
-        this.operationsService = operationsService;
+        this.operationService = operationService;
         this.executorService = Executors.newFixedThreadPool(1);
 
     }
 
     public void operationsLoad() throws InterruptedException {
-        List<Class<?>> subClassList = SpringClassUtils.findSubclasses(OperationType.class, "org.example.entity");
+        List<Class<?>> subClassList = SpringClassUtils.findSubclasses(OperationKit.class, "org.example.entity");
         CountDownLatch latch = new CountDownLatch(subClassList.size());
 
         subClassList.forEach(subClass -> executorService.execute(() -> {
                 try {
-                    operationsService.getAllOperations(subClass);
+                    operationService.getAllOperations(subClass);
                 } catch (Exception e) {
                     log.error("Error processing {}: {}", subClass.getSimpleName(), e.getMessage(), e);
                 } finally {

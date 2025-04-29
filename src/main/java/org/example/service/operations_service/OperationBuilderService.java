@@ -3,7 +3,7 @@ package org.example.service.operations_service;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.Resources;
-import org.example.entity.operations_type.OperationType;
+import org.example.entity.operations_type.OperationKit;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 @Service
 public class OperationBuilderService {
 
-    public <T extends OperationType> T buildOperation(
+    public <T extends OperationKit> T buildOperation(
             Production production,
             Resources resource,
             List<String> supportedNum,

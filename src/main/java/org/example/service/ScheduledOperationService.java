@@ -65,4 +65,23 @@ public class ScheduledOperationService {
             response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Ошибка при удалении");
         }
     }
+
+    public StringBuilder loadOperations() {
+        StringBuilder builder = new StringBuilder();
+        String operationsJson = "{\"operations\":{";
+        builder.append(operationsJson);
+
+        List<ScheduledOperation> dbOperations = scheduledOperationRepo.findAll();
+        for (ScheduledOperation dbOperation : dbOperations) {
+            builder.append("\"");
+            builder.append(dbOperation.getResourceId()).append("\":");
+            builder.append(dbOperation.getOperations()).append(",");
+        }
+        builder.replace(builder.length() - 1, builder.length(), "");
+        builder.append("}}");
+
+        log.info("Load operations: {}", builder);
+
+        return builder;
+    }
 }

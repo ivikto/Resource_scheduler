@@ -20,7 +20,6 @@ import java.util.List;
 public class MontageConverter implements OperationConverter<Montage> {
 
     private final ResourcesRepo resourcesRepo;
-    private final OperationSaverService operationSaverService;
     private final OperationBuilderService operationBuilderService;
     private Resources resource;
 

@@ -1,23 +1,23 @@
 package org.example.repo;
 
-import org.example.entity.operations_type.OperationType;
+import org.example.entity.operations_type.OperationKit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface OperationsTypeRepo extends JpaRepository<OperationType, Integer> {
+public interface OperationKitRepo extends JpaRepository<OperationKit, Integer> {
 
     boolean existsByRefKeyAndNameAndTime(String refKey, String nomenclatureName, double time);
 
-    @Query("SELECT ot FROM OperationType ot" +
+    @Query("SELECT ot FROM OperationKit ot" +
             " WHERE ot.inTimeLine = false" +
             " AND ot.markForDelete = false" +
             " AND ot.isFinish = false")
-    List<OperationType> findByNotInTimeLine();
+    List<OperationKit> findByNotInTimeLine();
 
-    @Query("SELECT ot FROM OperationType ot WHERE ot.refKey = :ref_key")
-    List<OperationType> findByRefKey(String refKey);
+    @Query("SELECT ot FROM OperationKit ot WHERE ot.refKey = :ref_key")
+    List<OperationKit> findByRefKey(String refKey);
 
 
 

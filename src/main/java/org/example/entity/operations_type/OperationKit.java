@@ -14,7 +14,7 @@ import org.example.entity.Resources;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class OperationType {
+public class OperationKit {
 
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)

@@ -18,7 +18,7 @@ import org.example.repo.NomenclatureRepo;
 import org.example.repo.OperationRepo;
 import org.example.repo.ProductionRepo;
 import org.example.repo.StatusRepo;
-import org.example.repo.OperationsTypeRepo;
+import org.example.repo.OperationKitRepo;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,7 +39,7 @@ public class OdataParserService {
     private final OperationRepo operationRepo;
     private final ProductionRepo productionRepo;
     private final StatusRepo statusRepo;
-    private final OperationsTypeRepo operationsTypeRepo;
+    private final OperationKitRepo operationKitRepo;
     private final ProductionService productionService;
 
     private final ObjectMapper mapper = new ObjectMapper()

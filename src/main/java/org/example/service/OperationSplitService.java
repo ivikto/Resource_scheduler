@@ -1,9 +1,10 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.entity.operations_type.OperationType;
-import org.example.repo.OperationsTypeRepo;
+import org.example.entity.operations_type.OperationKit;
+import org.example.repo.OperationKitRepo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,15 +13,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OperationSplitService {
 
-    private final OperationsTypeRepo operationsTypeRepo;
+    private final OperationKitRepo operationKitRepo;
 
+    @Transactional
     public void splitOperations(int id, List<Integer> durations) {
 
-        OperationType oldOperation = operationsTypeRepo.findById(id).orElseThrow();
+        OperationKit oldOperation = operationKitRepo.findById(id).orElseThrow();
 
-        List<OperationType> splitOperations = new ArrayList<>();
+        List<OperationKit> splitOperations = new ArrayList<>();
         for (Integer duration : durations) {
-            OperationType splitOperation = OperationType.builder()
+            OperationKit splitOperation = OperationKit.builder()
                     .color(oldOperation.getColor())
                     .number(oldOperation.getNumber())
                     .name(oldOperation.getName())
@@ -35,7 +37,7 @@ public class OperationSplitService {
             splitOperations.add(splitOperation);
         }
 
-        operationsTypeRepo.saveAll(splitOperations);
-        operationsTypeRepo.delete(oldOperation);
+        operationKitRepo.saveAll(splitOperations);
+        operationKitRepo.delete(oldOperation);
     }
 }

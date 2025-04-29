@@ -1,12 +1,12 @@
-package org.example;
+package org.example.controller;
 
+import org.example.TestConfiguration;
 import org.example.controllers.MainController;
 import org.example.entity.Resources;
-import org.example.entity.operations_type.OperationType;
+import org.example.entity.operations_type.OperationKit;
+import org.example.repo.OperationKitRepo;
 import org.example.repo.ResourcesRepo;
-import org.example.repo.OperationsTypeRepo;
-import org.example.service.OperationsService;
-import org.example.service.Runner;
+import org.example.service.OperationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,29 +31,26 @@ class MainControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private OperationsTypeRepo operationsTypeRepo;
+    private OperationKitRepo operationKitRepo;
 
     @Autowired
     private ResourcesRepo resourcesRepo;
 
     @Autowired
-    private Runner runner;
-
-    @Autowired
-    private OperationsService operationsService;
+    private OperationService operationService;
 
 
     @Test
     void test() throws Exception {
 
-        List<OperationType> mockOperations = List.of(new OperationType(), new OperationType());
+        List<OperationKit> mockOperations = List.of(new OperationKit(), new OperationKit());
         List<Resources> mockResources = List.of(new Resources());
         Map<String, Double> mockMap = Map.of("Operation1", 120.0);
 
-        when(operationsTypeRepo.findByNotInTimeLine()).thenReturn(mockOperations);
+        when(operationKitRepo.findByNotInTimeLine()).thenReturn(mockOperations);
         when(resourcesRepo.findAll()).thenReturn(mockResources);
-        when(operationsService.timeSumForOperations()).thenReturn(180.0);
-        when(operationsService.timeForAllOperations()).thenReturn(mockMap);
+        when(operationService.timeSumForOperations()).thenReturn(180.0);
+        when(operationService.timeForAllOperations()).thenReturn(mockMap);
 
 
         mockMvc.perform(get("/"))
