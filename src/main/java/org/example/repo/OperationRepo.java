@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface OperationRepo extends JpaRepository<Operation, Integer> {
 
-    public List<Operation> getByProduction(Production production);
+    List<Operation> getByProduction(Production production);
 
 }

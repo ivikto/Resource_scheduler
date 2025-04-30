@@ -7,5 +7,5 @@ import java.util.Optional;
 
 public interface ResourcesRepo extends JpaRepository<Resources, Integer> {
 
-    public Optional<Resources> findFirstByName(String name);
+    Optional<Resources> findFirstByName(String name);
 }

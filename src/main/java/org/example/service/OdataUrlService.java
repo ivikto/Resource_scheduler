@@ -1,30 +1,31 @@
 package org.example.service;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.example.repo.StatusRepo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-@Component
+@Service
 @Slf4j
 @PropertySource("classpath:request.properties")
 public class OdataUrlService {
 
     private final StatusRepo statusRepo;
 
-    @Value("${baseUrl}")
-    private String baseUrl;
+    private final String baseUrl;
     private static final String DOC_TYPE = "Document_ЗаказНаПроизводство";
 
     private final String statusRefKey;
 
-    public OdataUrlService(StatusRepo statusRepo) {
+    public OdataUrlService(StatusRepo statusRepo, @Value("${baseUrl}") String baseUrl) {
         this.statusRepo = statusRepo;
-        statusRefKey = initStatusRefKey();
+        this.statusRefKey = initStatusRefKey();
+        this.baseUrl = baseUrl;
     }
 
     public String getUrl() {
