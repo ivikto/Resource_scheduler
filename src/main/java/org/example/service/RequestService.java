@@ -39,6 +39,7 @@ public class RequestService {
         this.productionService = productionService;
     }
 
+
     public void doRequest() {
         //Получаем ссылку для запроса
         String url = odataUrlService.getUrl();
@@ -73,7 +74,7 @@ public class RequestService {
 
     }
 
-    private String request(String requestUrl) {
+    public String request(String requestUrl) {
         int responseCode;
         StringBuilder response = new StringBuilder();
         String line;
