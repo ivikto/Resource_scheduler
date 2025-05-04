@@ -9,12 +9,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.entity.Nomenclature;
+import org.example.entity.OperationNomenclature;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.exception.InvalidJsonDataException;
 import org.example.exception.NomenclatureKeyMissingException;
-import org.example.repo.NomenclatureRepo;
+import org.example.repo.OperationNomenclatureRepo;
 import org.example.repo.OperationRepo;
 import org.example.repo.ProductionRepo;
 import org.example.repo.StatusRepo;
@@ -35,7 +35,7 @@ public class OdataParserService {
     @Getter
     private List<Operation> allOperations = new ArrayList<>();
 
-    private final NomenclatureRepo nomenclatureRepo;
+    private final OperationNomenclatureRepo operationNomenclatureRepo;
     private final OperationRepo operationRepo;
     private final ProductionRepo productionRepo;
     private final StatusRepo statusRepo;
@@ -55,7 +55,7 @@ public class OdataParserService {
         return productions;
     }
 
-    public Nomenclature getNomenclatureName(String json) {
+    public OperationNomenclature getNomenclatureName(String json) {
         return parseNum(json);
     }
 
@@ -108,15 +108,15 @@ public class OdataParserService {
                     // Устанавливаем двунаправленную связь
                     operation.setProduction(production);  // Важно!
                     // Дополнительная обработка операции
-                    operation.setNomenclature(nomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
+                    operation.setNomenclature(operationNomenclatureRepo.findRefKeyByName(operation.getOperationKey()));
                     allOperations.add(operation);
                 }
             }
         }
     }
 
-    private Nomenclature parseNum(String json) {
-        Nomenclature nomenclature = null;
+    private OperationNomenclature parseNum(String json) {
+        OperationNomenclature operationNomenclature = null;
         try {
             rootArray = mapper.readTree(json);
         } catch (JsonProcessingException e) {
@@ -126,14 +126,14 @@ public class OdataParserService {
         JsonNode valueArray = rootArray.get("value");
         for (JsonNode value : valueArray) {
             try {
-                nomenclature = mapper.treeToValue(value, Nomenclature.class);
+                operationNomenclature = mapper.treeToValue(value, OperationNomenclature.class);
 
             } catch (JsonProcessingException e) {
                 throw new InvalidJsonDataException(e.getMessage());
             }
 
         }
-        assert nomenclature != null;
-        return nomenclature;
+        assert operationNomenclature != null;
+        return operationNomenclature;
     }
 }

@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @Entity
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Nomenclature {
+public class OperationNomenclature {
 
     @Id
     @JsonProperty("Ref_Key")
@@ -17,5 +17,5 @@ public class Nomenclature {
     @JsonProperty("Code")
     private String code;
     @JsonProperty("Description")
-    private String description; // Наименование
+    private String name; // Наименование
 }

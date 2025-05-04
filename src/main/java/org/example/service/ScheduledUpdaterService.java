@@ -26,6 +26,13 @@ public class ScheduledUpdaterService {
             log.info("Updating operations at: {} ", new Date());
             long endTime = System.currentTimeMillis();
             log.info("Updated data at: {} sek", (endTime - startTime) / 1000);
+
+            log.info("Do request to Api");
+            String response = requestService.request("http://127.0.0.1:8081/api/get_info_productions");
+            log.info("Api response: {}", response);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Update database filed {}", e.getMessage(), e);
         } catch (Exception e) {
             log.error("Update database filed {}", e.getMessage(), e);
         }

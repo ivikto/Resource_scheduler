@@ -38,32 +38,34 @@ public class OdataUrlService {
 
     // Ссылка на все Заказы на производство в статусе "В работе", Изготовитель "Цех, Пометка на удаление "false"
     private String makeProdUrl() {
-        String filterValue = "СостояниеЗаказа_Key";
-        String filter = "?$filter=";
-        String filterByValue = URLEncoder.encode(filterValue, StandardCharsets.UTF_8);
-        String type = URLEncoder.encode(DOC_TYPE, StandardCharsets.UTF_8);
-        String guid = " eq guid'";
-        String delMark = "DeletionMark eq false";
 
-        String url = baseUrl + type + filter + filterByValue + guid + statusRefKey +
-                "' and "
-                + delMark
-                + "&$format=json";
-
-        return url.replace(" ", "%20").replace("'", "%27");
+        return (baseUrl +
+                URLEncoder.encode(DOC_TYPE, StandardCharsets.UTF_8) +
+                "?$filter=" +
+                URLEncoder.encode("СостояниеЗаказа_Key", StandardCharsets.UTF_8) +
+                " eq guid'" +
+                statusRefKey +
+                "' and " +
+                "DeletionMark eq false" +
+                "&$format=json")
+                .replace(" ", "%20").replace("'", "%27");
     }
 
     // Ссылка на номенклатуру с фильтром по Ref_Key
     public String makeNumUrl(String refKey) {
-        String filterValue = "Ref_Key";
-        String filter = "?$filter=";
-        String filterByValue = URLEncoder.encode(filterValue, StandardCharsets.UTF_8);
-        String type = URLEncoder.encode("Catalog_Номенклатура", StandardCharsets.UTF_8);
-        String guid = " eq guid'";
+        if (refKey == null || refKey.isBlank()) {
+            log.error("RefKey is null");
+            throw new IllegalArgumentException("RefKey cannot be null or blank");
+        }
 
-        String url = baseUrl + type + filter + filterByValue + guid + refKey + "'&$format=json";
-
-        return url.replace(" ", "%20").replace("'", "%27");
+        return (baseUrl +
+                URLEncoder.encode("Catalog_Номенклатура", StandardCharsets.UTF_8) +
+                "?$filter=" +
+                URLEncoder.encode("Ref_Key", StandardCharsets.UTF_8) +
+                " eq guid'" +
+                refKey +
+                "'&$format=json")
+                .replace(" ", "%20").replace("'", "%27");
     }
 
     private String initStatusRefKey() {

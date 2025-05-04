@@ -39,8 +39,12 @@ public class OperationBuilderService {
 
         return operations.stream()
                 .filter(Objects::nonNull)
+                .filter(op -> op.getNomenclature() != null)
                 .filter(operation -> supportedNum.contains(operation.getNomenclature()))
-                .mapToDouble(Operation::getOperationTime)
+                .mapToDouble(op -> {
+                    double time = op.getOperationTime();
+                    return time > 0 ? time : 0;
+                })
                 .sum() * 60; // переводим в минуты
     }
 }

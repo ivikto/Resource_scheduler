@@ -11,7 +11,7 @@ public class Runner {
 
 
 
-    public void run() {
+    public void run() { // Класс и метод для отладки
 
     }
 }

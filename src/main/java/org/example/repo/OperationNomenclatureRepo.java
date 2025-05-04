@@ -1,17 +1,17 @@
 package org.example.repo;
 
-import org.example.entity.Nomenclature;
+import org.example.entity.OperationNomenclature;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Set;
 
-public interface NomenclatureRepo extends JpaRepository<Nomenclature, Integer> {
+public interface OperationNomenclatureRepo extends JpaRepository<OperationNomenclature, Integer> {
 
-    @Query("SELECT s.description FROM Nomenclature s WHERE s.refKey = :ref_key")
+    @Query("SELECT s.name FROM OperationNomenclature s WHERE s.refKey = :ref_key")
     String findRefKeyByName(@Param("ref_key") String refKey);
 
-    @Query("SELECT n.refKey FROM Nomenclature n")
+    @Query("SELECT n.refKey FROM OperationNomenclature n")
     Set<String> findAllRefKeys();
 }

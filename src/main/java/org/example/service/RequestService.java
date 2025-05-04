@@ -2,9 +2,10 @@ package org.example.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.config.AuthConfig;
-import org.example.entity.Nomenclature;
+import org.example.entity.OperationNomenclature;
 import org.example.entity.Operation;
 import org.example.entity.Production;
+import org.example.exception.WrongUrlException;
 import org.example.repo.ProductionRepo;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ public class RequestService {
     }
 
     public void operationsNomenclatureNameLoad() {
-        List<Nomenclature> operationsNomenclatureList = new ArrayList<>();
+        List<OperationNomenclature> operationsOperationNomenclatureList = new ArrayList<>();
         List<String> operationsKeys = odataParserService.getAllOperations().stream()
                 .map(Operation::getOperationKey)
                 .distinct()
@@ -61,14 +62,14 @@ public class RequestService {
             String url = odataUrlService.getUrl(key);
             String response = request(url);
 
-            operationsNomenclatureList.add(odataParserService.getNomenclatureName(response));
+            operationsOperationNomenclatureList.add(odataParserService.getNomenclatureName(response));
         }
-        productionService.saveOperationsNomenclature(operationsNomenclatureList);
+        productionService.saveOperationsNomenclature(operationsOperationNomenclatureList);
     }
 
     public void getNameOfNomenclature(Production production) {
         String url = odataUrlService.makeNumUrl(production.getManufacturedProductRefKey());
-        String name = odataParserService.getNomenclatureName(request(url)).getDescription();
+        String name = odataParserService.getNomenclatureName(request(url)).getName();
         production.setManufacturedProductName(name);
         productionRepo.save(production);
 
@@ -102,9 +103,10 @@ public class RequestService {
         } catch (MalformedURLException e) {
             log.error("Не корректный URL: {} ", e.getMessage());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new WrongUrlException(e.getMessage());
         }
 
         return response.toString();
     }
+
 }

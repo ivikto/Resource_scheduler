@@ -2,11 +2,11 @@ package org.example.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.entity.Nomenclature;
+import org.example.entity.OperationNomenclature;
 import org.example.entity.Operation;
 import org.example.entity.Production;
 import org.example.entity.operations_type.OperationKit;
-import org.example.repo.NomenclatureRepo;
+import org.example.repo.OperationNomenclatureRepo;
 import org.example.repo.OperationRepo;
 import org.example.repo.ProductionRepo;
 import org.example.repo.StatusRepo;
@@ -27,7 +27,7 @@ public class ProductionService {
     private final ProductionRepo productionRepo;
     private final StatusRepo statusRepo;
     private final OperationKitRepo operationKitRepo;
-    private final NomenclatureRepo nomenclatureRepo;
+    private final OperationNomenclatureRepo operationNomenclatureRepo;
 
     public void saveProductionsAndOperations(List<Production> productions, List<Production> newProductions) {
         for (Production production : productions) {
@@ -61,16 +61,16 @@ public class ProductionService {
     }
 
     @Transactional
-    public void saveOperationsNomenclature(List<Nomenclature> nomenclatureList) {
-        Set<String> existNomenclature = nomenclatureRepo.findAllRefKeys();
+    public void saveOperationsNomenclature(List<OperationNomenclature> operationNomenclatureList) {
+        Set<String> existNomenclature = operationNomenclatureRepo.findAllRefKeys();
 
-        List<Nomenclature> newNomenclatureList = nomenclatureList.stream()
+        List<OperationNomenclature> newOperationNomenclatureList = operationNomenclatureList.stream()
                 .filter(n -> !existNomenclature.contains(n.getRefKey()))
                 .toList();
 
-        if (!newNomenclatureList.isEmpty()) {
-            nomenclatureRepo.saveAll(newNomenclatureList);
-            log.info("New nomenclature for Operations added {}", newNomenclatureList);
+        if (!newOperationNomenclatureList.isEmpty()) {
+            operationNomenclatureRepo.saveAll(newOperationNomenclatureList);
+            log.info("New nomenclature for Operations added {}", newOperationNomenclatureList);
         } else {
             log.info("No new nomenclature for Operations");
         }
